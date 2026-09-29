@@ -141,7 +141,7 @@ export default function Loader({ onFinish }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <IoCubeOutline className="text-p text-[2em] spin" />
+          <IoCubeOutline className="text-p text-[5em] spin" />
         </motion.p>
       </motion.div>
     </div>

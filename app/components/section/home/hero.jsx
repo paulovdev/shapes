@@ -20,43 +20,6 @@ const CHARS = "!<>-_\\/[]{}—=+*^?#__";
 /* Helper para cálculo modular seguro */
 const mod = (n, m) => ((n % m) + m) % m;
 
-function ScrambleText({ text = "", trigger = false, className = "" }) {
-  const [displayText, setDisplayText] = useState(text);
-
-  useEffect(() => {
-    let frame = 0;
-    let animationFrame;
-    const totalFrames = text.length * 4;
-
-    if (trigger) {
-      const update = () => {
-        let out = "";
-        for (let i = 0; i < text.length; i++) {
-          if (frame > i * 4) {
-            out += text[i];
-          } else {
-            out += CHARS[Math.floor(Math.random() * CHARS.length)];
-          }
-        }
-        setDisplayText(out);
-        frame++;
-        if (frame <= totalFrames) {
-          animationFrame = requestAnimationFrame(update);
-        } else {
-          setDisplayText(text);
-        }
-      };
-      update();
-    } else {
-      setDisplayText(text);
-    }
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, [trigger, text]);
-
-  return <span className={className}>{displayText}</span>;
-}
-
 function InfiniteCardCell({
   col,
   row,
@@ -89,16 +52,25 @@ function InfiniteCardCell({
   );
 
   const itemData = filteredData[cellIndex % numItems] || {};
-  const stackText = Array.isArray(itemData?.stack)
-    ? itemData.stack.slice(0, 2).join(" · ")
-    : "SHAPE";
 
   return (
     <motion.div
       onClick={() => onSelect(itemData, cellIndex)}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
+      initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
       animate={{
+        clipPath:
+          isAnyOpen && !isActive
+            ? "inset(100% 0% 0% 0%)"
+            : "inset(0% 0% 0% 0%)",
+      }}
+      transition={{
+        duration: 1,
+        delay: 5,
+        ease: [0.76, 0, 0.24, 1],
+      }}
+      /*   animate={{
         opacity: isAnyOpen && !isActive ? 0.2 : 1,
         scale: isActive ? 1.05 : hover ? 1.02 : 1,
         filter:
@@ -106,7 +78,7 @@ function InfiniteCardCell({
             ? "brightness(40%) blur(2px)"
             : "brightness(100%) blur(0px)",
       }}
-      transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+      transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }} */
       style={{
         position: "absolute",
         left: 0,
@@ -118,13 +90,9 @@ function InfiniteCardCell({
       }}
       className="group cursor-pointer select-none"
     >
-      <div
-        className="relative size-full p-4 flex flex-col justify-between 
-      "
-      >
+      <div className="relative size-full p-4 flex flex-col justify-between">
         <div
           className="flex justify-between items-center text-p uppercase tracking-[-0.01em]
-
       group-hover:opacity-100 opacity-0 transition-all"
         >
           <Scramble
@@ -191,55 +159,55 @@ function ShapeDetailModal({ project, onClose }) {
         exit={{ scale: 0.9, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-200 bg-p border border-s/20 p-6 md:p-8 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-200 bg-s border border-s/20 p-6 md:p-8 shadow-2xl overflow-hidden"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-s/5 hover:bg-s/10 text-s transition-colors"
+          className="absolute top-4 right-4 p-2 bg-p hover:bg-p/90 text-s transition-colors"
         >
-          <MdClose className="text-xl" />
+          <MdClose className="text-[1.25em] text-s" />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          <div className="w-full h-64 md:h-80 p-4 flex items-center justify-center border border-s/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+          <div className="w-full h-100 p-5 flex items-center justify-center border border-p/10">
             <img
               src={project.img}
               alt={project.title}
-              className="size-full object-contain mix-blend-multiply"
+              className="size-full object-contain"
             />
           </div>
 
-          <div className="flex flex-col gap-4 ">
+          <div className="flex flex-col gap-5">
             <div>
-              <span className="font-chivo text-[.8em] text-p font-semibold uppercase bg-s px-2 py-0.5">
+              <span className="font-chivo text-[.8em] text-s font-semibold uppercase bg-p px-2 py-0.5">
                 {project.category}
               </span>
-              <h2 className="font-chivo text-[.9em] text-s font-semibold uppercase mt-2">
+              <h2 className="font-chivo text-[1.25em] text-p font-semibold uppercase mt-2">
                 {project.title}
               </h2>
-              <p className="font-chivo text-[.8em] text-s/50 font-semibold">
+              <p className="font-chivo text-[.8em] text-p/50 font-semibold">
                 {project.year} ARCHIVE EDITION
               </p>
             </div>
 
-            <p className="font-chivo text-[.8em] text-s font-semibold">
+            <p className="font-chivo text-[.8em] text-p font-semibold">
               {project.desc}
             </p>
 
-            <div className="space-y-2 border-t border-s/10 pt-4">
+            <div className="space-y-2 border-t border-p/10 pt-4">
               <div className="flex justify-between">
-                <span className="font-chivo text-[.8em] text-s/50 font-semibold">
+                <span className="font-chivo text-[.8em] text-p/50 font-semibold">
                   POLYGON COUNT:
                 </span>
-                <span className="font-chivo text-[.8em] text-s font-semibold">
+                <span className="font-chivo text-[.8em] text-p font-semibold">
                   {project.polyCount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="font-chivo text-[.8em] text-s/50 font-semibold truncate">
+                <span className="font-chivo text-[.8em] text-p/50 font-semibold truncate">
                   SURFACE MATERIAL:
                 </span>
-                <span className="font-chivo text-[.8em] text-s font-semibold">
+                <span className="font-chivo text-[.8em] text-p font-semibold">
                   {project.material}
                 </span>
               </div>
@@ -249,7 +217,7 @@ function ShapeDetailModal({ project, onClose }) {
               {project.stack?.map((st, i) => (
                 <span
                   key={i}
-                  className="font-chivo text-[.8em] text-s font-semibold bg-s/5 border border-s/10 px-2 py-1"
+                  className="font-chivo text-[.8em] text-p font-semibold bg-p/5 border border-p/10 px-2 py-1"
                 >
                   {st}
                 </span>
@@ -257,7 +225,7 @@ function ShapeDetailModal({ project, onClose }) {
             </div>
 
             <button
-              className="mt-2 w-full py-2.5 bg-s font-chivo text-[.8em] text-p font-semibold 
+              className="mt-2 w-full py-2.5 bg-p font-chivo text-[.8em] text-s font-semibold 
             flex items-center justify-center gap-2"
             >
               <FaFolderOpen /> DOWNLOAD 3D ASSETS
@@ -363,8 +331,21 @@ export default function GalleryHero() {
   }
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-p text-s select-none font-sans cursor-grab active:cursor-grabbing">
-      <nav className="fixed top-0 left-0 w-full p-4 md:p-6 flex items-center justify-center z-100  select-none pointer-events-none">
+    <main
+      className="relative w-screen h-screen overflow-hidden bg-p text-s select-none
+    overscroll-none touch-none"
+    >
+      <motion.nav
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: 1,
+          delay: 5,
+          ease: [0.76, 0, 0.24, 1],
+        }}
+        className="fixed top-0 left-0 w-full p-4 md:p-6 flex items-center justify-center z-100  select-none pointer-events-none"
+      >
         <div
           onPointerLeave={() => setHoveredCategory(null)}
           className="hidden md:flex items-center gap-1 bg-s text-p p-1.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
@@ -401,7 +382,7 @@ export default function GalleryHero() {
             );
           })}
         </div>
-      </nav>
+      </motion.nav>
 
       <div
         className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-100 flex items-center gap-1 
@@ -418,7 +399,6 @@ export default function GalleryHero() {
                 isActive ? "text-s" : "text-p hover:opacity-80"
               }`}
             >
-              {/* Pílula/Indicador desliza até a opção selecionada no toque */}
               {isActive && (
                 <motion.div
                   layoutId="activeMobileCategoryTab"
@@ -436,39 +416,39 @@ export default function GalleryHero() {
         })}
       </div>
 
-      {/* 4. Canvas da Galeria Infinita */}
       <section
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="relative size-full overflow-hidden"
+        className="relative size-full overflow-hidden overscroll-none touch-none"
       >
         <div className="absolute inset-0 pointer-events-auto">
           {gridCells.map(({ col, row, cellIndex }) => (
-            <InfiniteCardCell
-              key={`cell-${row}-${col}`}
-              col={col}
-              row={row}
-              cellIndex={cellIndex}
-              cellW={CELL_W}
-              cellH={CELL_H}
-              cardW={CARD_W}
-              cardH={CARD_H}
-              totalW={TOTAL_GRID_W}
-              totalH={TOTAL_GRID_H}
-              canvasX={springX}
-              canvasY={springY}
-              filteredData={filteredData}
-              numItems={numItems}
-              onSelect={handleCardClick}
-              isActive={selectedCellIndex === cellIndex}
-              isAnyOpen={!!selectedProject}
-            />
+            <AnimatePresence mode="wait">
+              <InfiniteCardCell
+                key={`cell-${row}-${col}`}
+                col={col}
+                row={row}
+                cellIndex={cellIndex}
+                cellW={CELL_W}
+                cellH={CELL_H}
+                cardW={CARD_W}
+                cardH={CARD_H}
+                totalW={TOTAL_GRID_W}
+                totalH={TOTAL_GRID_H}
+                canvasX={springX}
+                canvasY={springY}
+                filteredData={filteredData}
+                numItems={numItems}
+                onSelect={handleCardClick}
+                isActive={selectedCellIndex === cellIndex}
+                isAnyOpen={!!selectedProject}
+              />{" "}
+            </AnimatePresence>
           ))}
         </div>
       </section>
 
-      {/* 5. Modal de Detalhes do Shape */}
       <AnimatePresence>
         {selectedProject && (
           <ShapeDetailModal

@@ -176,17 +176,6 @@ export const shapesData = [
     material: "Satin Neon Coating",
   },
   {
-    id: "shape-5",
-    year: "2025",
-    title: "CONCENTRIC ARCH",
-    category: "ARCHITECTURAL",
-    stack: ["CONCRETE", "ARCHITECTURAL", "BRUTALISM"],
-    img: "/images/17.png",
-    desc: "Monolito de arcos concêntricos em textura de concreto bruto e relevo arquitetônico.",
-    polyCount: "18,900 Tris",
-    material: "Cast Concrete & Micro-cement",
-  },
-  {
     id: "shape-6",
     year: "2024",
     title: "WIREFRAME GLOBE",
