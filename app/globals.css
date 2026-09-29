@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-p: #fff;
+  --color-s: #000;
+
+  --font-chivo: "Chivo Mono";
+
+  --breakpoint-full-ds: 1900px;
+  --breakpoint-ds: 1262px;
+  --breakpoint-lg: 992px;
+  --breakpoint-md: 768px;
+  --breakpoint-sm: 400px;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: 0;
+}
+
+body {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  width: 100dvw;
+  overflow-x: hidden;
+  font-family: "Chivo Mono", sans-serif !important;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.noise::before {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  content: "";
+  opacity: 0.03;
+  z-index: 1000;
+  pointer-events: none;
+  background: url("/noise.gif");
+}
+.spin {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
