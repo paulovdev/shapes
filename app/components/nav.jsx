@@ -19,11 +19,11 @@ const textSlideAnim = {
 
 const Nav = () => {
   return (
-    <nav className="fixed top-0 left-0 p-7 w-full flex items-center justify-between z-100 mix-blend-difference select-none max-md:p-3">
+    <nav className="fixed top-0 left-0 p-5 w-full flex items-center justify-between z-100 mix-blend-difference select-none max-md:p-3">
       <div className="overflow-hidden" data-cursor="hover">
         <ScrambleHover
           text="shapes®"
-          className="text-p text-[.8em] font-semibold uppercase"
+          className="text-p text-[.8em] font-medium uppercase"
         />
       </div>
 
@@ -33,7 +33,7 @@ const Nav = () => {
             <ScrambleHover
               text="about"
               icon={<IoMdContact className="text-[1em]" />}
-              className="text-p text-[.8em] font-semibold uppercase cursor-default"
+              className="text-p text-[.8em] font-medium uppercase cursor-default"
             />
           </Link>
         </motion.div>
