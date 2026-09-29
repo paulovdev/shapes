@@ -87,14 +87,12 @@ export default function Loader({ onFinish }) {
       const p = pRef.current;
       const star = starRef.current;
 
-      // Novo texto focado em Design de Interiores
       const fullText = "shapes® — archive 2026";
 
       await scrambleIn(p, fullText);
 
       await wait(600);
 
-      // Remove a parte do sufixo, mantendo apenas "studio interior"
       const removePart = " — archive 2026";
       await scrambleOut(p, removePart.length);
 
@@ -132,7 +130,7 @@ export default function Loader({ onFinish }) {
       <motion.div className="loader-bg absolute inset-0 bg-s flex items-center justify-center">
         <motion.p
           ref={pRef}
-          className="fixed z-100 text-p text-[.9em] font-normal uppercase mix-blend-difference"
+          className="fixed z-100 text-p text-[.8em] font-normal uppercase mix-blend-difference"
         />
         <motion.p
           ref={starRef}
