@@ -15,9 +15,7 @@ import Scramble from "../../common/scramble";
 import { shapesData } from "@/app/data/projects.data";
 
 const CATEGORIES = ["ALL", "ABSTRACT", "ORGANIC", "ARCHITECTURAL"];
-const CHARS = "!<>-_\\/[]{}—=+*^?#__";
 
-/* Helper para cálculo modular seguro */
 const mod = (n, m) => ((n % m) + m) % m;
 
 function InfiniteCardCell({
@@ -37,9 +35,11 @@ function InfiniteCardCell({
   onSelect,
   isActive,
   isAnyOpen,
+  loading,
+  offsetY = 0,
 }) {
   const baseX = col * cellW;
-  const baseY = row * cellH;
+  const baseY = row * cellH + offsetY;
   const [hover, setHover] = useState(false);
 
   const renderX = useTransform(
@@ -67,18 +67,9 @@ function InfiniteCardCell({
       }}
       transition={{
         duration: 1,
-        delay: 5,
+        delay: loading ? 5 + cellIndex * 0.015 : cellIndex * 0.035,
         ease: [0.76, 0, 0.24, 1],
       }}
-      /*   animate={{
-        opacity: isAnyOpen && !isActive ? 0.2 : 1,
-        scale: isActive ? 1.05 : hover ? 1.02 : 1,
-        filter:
-          isAnyOpen && !isActive
-            ? "brightness(40%) blur(2px)"
-            : "brightness(100%) blur(0px)",
-      }}
-      transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }} */
       style={{
         position: "absolute",
         left: 0,
@@ -88,9 +79,10 @@ function InfiniteCardCell({
         width: cardW,
         height: cardH,
       }}
-      className="group cursor-pointer select-none"
+      className="group select-none"
+      data-cursor="hover"
     >
-      <div className="relative size-full p-4 flex flex-col justify-between">
+      <div className="relative size-full p-4 flex flex-col justify-between border-2 border-transparent ">
         <div
           className="flex justify-between items-center text-p uppercase tracking-[-0.01em]
       group-hover:opacity-100 opacity-0 transition-all"
@@ -98,19 +90,18 @@ function InfiniteCardCell({
           <Scramble
             text={itemData?.year || "2024"}
             trigger={Boolean(hover)}
-            className="font-chivo text-[.8em] text-s font-semibold uppercase"
+            className="text-[.8em] text-s font-semibold uppercase"
           />
 
           <span className="truncate max-w-[130px] text-right">
             <Scramble
               text={itemData?.title || "UNTITLED"}
               trigger={Boolean(hover)}
-              className="font-chivo text-[.8em] text-s font-semibold uppercase"
+              className="text-[.8em] text-s font-semibold uppercase"
             />
           </span>
         </div>
 
-        {/* Imagem do Shape 3D */}
         <div className="relative my-2 w-full flex-1 flex items-center justify-center p-2 overflow-hidden rounded-lg ">
           {itemData.img ? (
             <img
@@ -124,13 +115,12 @@ function InfiniteCardCell({
             </div>
           )}
 
-          {/* Badge Central no Hover estilo Sans Stack */}
           <div
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300
           "
           >
             <span
-              className="bg-s font-chivo text-[.8em] text-p font-semibold uppercase px-3 py-1.5
+              className="bg-s text-[.8em] text-p font-semibold uppercase px-3 py-1.5
             flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-transform"
             >
               <FaLink className="text-[0.9em]" /> INSPECT SHAPE
@@ -152,6 +142,7 @@ function ShapeDetailModal({ project, onClose }) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-200 flex items-center justify-center p-5 md:p-8 bg-s/60 backdrop-blur-md"
       onClick={onClose}
+      data-cursor="normal"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
@@ -164,6 +155,7 @@ function ShapeDetailModal({ project, onClose }) {
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 bg-p hover:bg-p/90 text-s transition-colors"
+          data-cursor="hover"
         >
           <MdClose className="text-[1.25em] text-s" />
         </button>
@@ -179,35 +171,33 @@ function ShapeDetailModal({ project, onClose }) {
 
           <div className="flex flex-col gap-5">
             <div>
-              <span className="font-chivo text-[.8em] text-s font-semibold uppercase bg-p px-2 py-0.5">
+              <span className="text-[.8em] text-s font-semibold uppercase bg-p px-2 py-0.5">
                 {project.category}
               </span>
-              <h2 className="font-chivo text-[1.25em] text-p font-semibold uppercase mt-2">
+              <h2 className="text-[1.25em] text-p font-semibold uppercase mt-2">
                 {project.title}
               </h2>
-              <p className="font-chivo text-[.8em] text-p/50 font-semibold">
+              <p className="text-[.8em] text-p/50 font-semibold">
                 {project.year} ARCHIVE EDITION
               </p>
             </div>
 
-            <p className="font-chivo text-[.8em] text-p font-semibold">
-              {project.desc}
-            </p>
+            <p className="text-[.8em] text-p font-semibold">{project.desc}</p>
 
             <div className="space-y-2 border-t border-p/10 pt-4">
               <div className="flex justify-between">
-                <span className="font-chivo text-[.8em] text-p/50 font-semibold">
+                <span className="text-[.8em] text-p/50 font-semibold">
                   POLYGON COUNT:
                 </span>
-                <span className="font-chivo text-[.8em] text-p font-semibold">
+                <span className="text-[.8em] text-p font-semibold">
                   {project.polyCount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="font-chivo text-[.8em] text-p/50 font-semibold truncate">
+                <span className="text-[.8em] text-p/50 font-semibold truncate">
                   SURFACE MATERIAL:
                 </span>
-                <span className="font-chivo text-[.8em] text-p font-semibold">
+                <span className="text-[.8em] text-p font-semibold">
                   {project.material}
                 </span>
               </div>
@@ -217,7 +207,7 @@ function ShapeDetailModal({ project, onClose }) {
               {project.stack?.map((st, i) => (
                 <span
                   key={i}
-                  className="font-chivo text-[.8em] text-p font-semibold bg-p/5 border border-p/10 px-2 py-1"
+                  className="text-[.8em] text-p font-semibold bg-p/5 border border-p/10 px-2 py-1"
                 >
                   {st}
                 </span>
@@ -225,7 +215,7 @@ function ShapeDetailModal({ project, onClose }) {
             </div>
 
             <button
-              className="mt-2 w-full py-2.5 bg-p font-chivo text-[.8em] text-s font-semibold 
+              className="mt-2 w-full py-2.5 bg-p text-[.8em] text-s font-semibold 
             flex items-center justify-center gap-2"
             >
               <FaFolderOpen /> DOWNLOAD 3D ASSETS
@@ -237,8 +227,7 @@ function ShapeDetailModal({ project, onClose }) {
   );
 }
 
-export default function GalleryHero() {
-  const [loading, setLoading] = useState(true);
+export default function GalleryHero({ loading }) {
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedCellIndex, setSelectedCellIndex] = useState(null);
@@ -263,10 +252,9 @@ export default function GalleryHero() {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Cálculos de dimensão dos Cards na Grid
-  const CARD_W = vw <= 768 ? 240 : vw <= 992 ? 280 : 340;
-  const CARD_H = vw <= 768 ? 280 : vw <= 992 ? 320 : 380;
-  const GAP = vw <= 768 ? 20 : 32;
+  const CARD_W = vw <= 768 ? 240 : vw <= 992 ? 280 : 240;
+  const CARD_H = vw <= 768 ? 280 : vw <= 992 ? 320 : 280;
+  const GAP = vw <= 768 ? 75 : 150;
 
   const CELL_W = CARD_W + GAP;
   const CELL_H = CARD_H + GAP;
@@ -280,12 +268,11 @@ export default function GalleryHero() {
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
 
-  const springX = useSpring(rawX, { stiffness: 350, damping: 40 });
-  const springY = useSpring(rawY, { stiffness: 350, damping: 40 });
+  const springX = useSpring(rawX, { stiffness: 150, damping: 30 });
+  const springY = useSpring(rawY, { stiffness: 150, damping: 30 });
 
   const numItems = filteredData.length || 1;
 
-  /* Manipuladores de Drag da Canvas */
   const handlePointerDown = (e) => {
     isDragging.current = false;
     lastPointer.current = { x: e.clientX, y: e.clientY };
@@ -318,7 +305,8 @@ export default function GalleryHero() {
     setSelectedCellIndex(cellIndex);
   }, []);
 
-  // Montagem da matriz de posições
+  const COLUMN_OFFSETS = [0, CELL_H * 0.45, -CELL_H * 0.25, CELL_H * 0.35];
+
   const gridCells = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -326,6 +314,7 @@ export default function GalleryHero() {
         col: c,
         row: r,
         cellIndex: r * COLS + c,
+        offsetY: COLUMN_OFFSETS[c % COLUMN_OFFSETS.length],
       });
     }
   }
@@ -334,6 +323,7 @@ export default function GalleryHero() {
     <main
       className="relative w-screen h-svh overflow-hidden bg-p text-s select-none
     overscroll-none touch-none"
+      data-cursor="drag"
     >
       <motion.nav
         initial={{ opacity: 0 }}
@@ -341,10 +331,10 @@ export default function GalleryHero() {
         exit={{ opacity: 0 }}
         transition={{
           duration: 1,
-          delay: 5,
+          delay: loading ? 5 : 0,
           ease: [0.76, 0, 0.24, 1],
         }}
-        className="fixed top-0 left-0 w-full p-4 md:p-6 flex items-center justify-center z-100  select-none pointer-events-none"
+        className="fixed top-0 left-0 w-full p-4 md:p-6 flex items-center justify-center z-100 select-none pointer-events-none"
       >
         <div
           onPointerLeave={() => setHoveredCategory(null)}
@@ -354,7 +344,6 @@ export default function GalleryHero() {
             const isActive = activeCategory === cat;
             const isHovered = hoveredCategory === cat;
 
-            // O indicador segue o hover; se não houver hover, fica na categoria ativa
             const isTarget = hoveredCategory ? isHovered : isActive;
 
             return (
@@ -362,9 +351,10 @@ export default function GalleryHero() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 onPointerEnter={() => setHoveredCategory(cat)}
-                className={`relative px-4 py-1 font-chivo font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
+                className={`relative px-4 py-1 font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
                   isTarget ? "text-s" : "text-p hover:opacity-80"
                 }`}
+                data-cursor="hover"
               >
                 {isTarget && (
                   <motion.div
@@ -395,7 +385,7 @@ export default function GalleryHero() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`relative px-3 py-1 font-chivo font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
+              className={`relative px-3 py-1 font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
                 isActive ? "text-s" : "text-p hover:opacity-80"
               }`}
             >
@@ -423,28 +413,27 @@ export default function GalleryHero() {
         className="relative size-full overflow-hidden overscroll-none touch-none"
       >
         <div className="absolute inset-0 pointer-events-auto">
-          {gridCells.map(({ col, row, cellIndex }) => (
-            <AnimatePresence mode="wait">
-              <InfiniteCardCell
-                key={`cell-${row}-${col}`}
-                col={col}
-                row={row}
-                cellIndex={cellIndex}
-                cellW={CELL_W}
-                cellH={CELL_H}
-                cardW={CARD_W}
-                cardH={CARD_H}
-                totalW={TOTAL_GRID_W}
-                totalH={TOTAL_GRID_H}
-                canvasX={springX}
-                canvasY={springY}
-                filteredData={filteredData}
-                numItems={numItems}
-                onSelect={handleCardClick}
-                isActive={selectedCellIndex === cellIndex}
-                isAnyOpen={!!selectedProject}
-              />{" "}
-            </AnimatePresence>
+          {gridCells.map(({ col, row, cellIndex, offsetY }) => (
+            <InfiniteCardCell
+              key={`cell-${row}-${col}`}
+              col={col}
+              row={row}
+              cellIndex={cellIndex}
+              offsetY={offsetY}
+              cellW={CELL_W}
+              cellH={CELL_H}
+              cardW={CARD_W}
+              cardH={CARD_H}
+              totalW={TOTAL_GRID_W}
+              totalH={TOTAL_GRID_H}
+              canvasX={springX}
+              canvasY={springY}
+              filteredData={filteredData}
+              numItems={numItems}
+              onSelect={handleCardClick}
+              isActive={selectedCellIndex === cellIndex}
+              isAnyOpen={!!selectedProject}
+            />
           ))}
         </div>
       </section>

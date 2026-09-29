@@ -15,7 +15,7 @@ const HomePage = ({ data = [] }) => {
 
       <Nav />
       <main className="w-full h-screen overflow-hidden">
-        <Hero />
+        <Hero loading={loading} />
       </main>
 
       {/*    <Footer /> */}

@@ -9,8 +9,7 @@ const chivo = Chivo({
 
 export const metadata = {
   title: "shapes® — archive 2026",
-  description:
-    "archive 2026",
+  description: "archive 2026",
 };
 
 export default function RootLayout({ children }) {
@@ -19,7 +18,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${chivo.variable} bg-s h-full antialiased noise`}
     >
-      <body className="min-h-full">
+      <body className="min-h-full cursor-default!">
         <CustomCursor />
 
         {children}
