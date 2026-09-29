@@ -1,9 +1,9 @@
-import { Chivo_Mono } from "next/font/google";
+import { Chivo } from "next/font/google";
 import "./globals.css";
 import CustomCursor from "./components/common/custom-cursor";
 
-const chivo = Chivo_Mono({
-  variable: "--chivo-mono",
+const chivo = Chivo({
+  variable: "--font-chivo",
   subsets: ["latin"],
 });
 
@@ -15,8 +15,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={chivo.variable}>
-      <body className="antialiased noise bg-s">
+    <html
+      lang="en"
+      className={`${chivo.variable} bg-s h-full antialiased noise`}
+    >
+      <body className="min-h-full">
         <CustomCursor />
 
         {children}

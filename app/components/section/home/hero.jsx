@@ -332,7 +332,7 @@ export default function GalleryHero() {
 
   return (
     <main
-      className="relative w-screen h-screen overflow-hidden bg-p text-s select-none
+      className="relative w-screen h-svh overflow-hidden bg-p text-s select-none
     overscroll-none touch-none"
     >
       <motion.nav

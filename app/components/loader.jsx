@@ -127,7 +127,7 @@ export default function Loader({ onFinish }) {
   return (
     <div
       ref={scope}
-      className="fixed inset-0 w-screen h-screen z-300 overflow-hidden"
+      className="fixed inset-0 w-screen h-svh z-300 overflow-hidden overscroll-none touch-none"
     >
       <motion.div className="loader-bg absolute inset-0 bg-s flex items-center justify-center">
         <motion.p

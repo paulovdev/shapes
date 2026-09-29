@@ -4,8 +4,6 @@
   --color-p: #fff;
   --color-s: #000;
 
-  --font-chivo: "Chivo Mono";
-
   --breakpoint-full-ds: 1900px;
   --breakpoint-ds: 1262px;
   --breakpoint-lg: 992px;
@@ -26,7 +24,7 @@ body {
   margin: 0;
   width: 100dvw;
   overflow-x: hidden;
-  font-family: "Chivo Mono", sans-serif !important;
+  font-family: "chivo", sans-serif;
 }
 
 ::-webkit-scrollbar {
