@@ -10,7 +10,7 @@ const chivo = Chivo({
 export const metadata = {
   title: "shapes® — archive 2026",
   description:
-    "Front-end developer & UX/UI design, specializing in creating immersive and intuitive user experiences, consistently pushing the boundaries of design innovation.",
+    "archive 2026",
 };
 
 export default function RootLayout({ children }) {
