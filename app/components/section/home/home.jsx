@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Hero from "./hero";
 import Nav from "../../nav";
-import Footer from "../../footer";
+ 
 import Loader from "../../loader";
 
 const HomePage = ({ data = [] }) => {
@@ -18,7 +18,7 @@ const HomePage = ({ data = [] }) => {
         <Hero loading={loading} />
       </main>
 
-      {/*    <Footer /> */}
+   
     </>
   );
 };

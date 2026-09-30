@@ -13,6 +13,7 @@ import { FaLink, FaFolderOpen, FaCube } from "react-icons/fa6";
 
 import Scramble from "../../common/scramble";
 import { shapesData } from "@/app/data/projects.data";
+import { useDragging } from "@/app/stores/zustand";
 
 const CATEGORIES = ["ALL", "ABSTRACT", "ORGANIC", "ARCHITECTURAL"];
 
@@ -161,7 +162,7 @@ function ShapeDetailModal({ project, onClose }) {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-          <div className="w-full h-100 p-5 flex items-center justify-center border border-p/10">
+          <div className="w-full h-75 p-5 flex items-center justify-center border border-p/10">
             <img
               src={project.img}
               alt={project.title}
@@ -234,7 +235,7 @@ export default function GalleryHero({ loading }) {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [vw, setVw] = useState(1920);
   const [vh, setVh] = useState(1080);
-
+  const { setDragginS } = useDragging();
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
 
@@ -275,28 +276,40 @@ export default function GalleryHero({ loading }) {
 
   const handlePointerDown = (e) => {
     isDragging.current = false;
-    lastPointer.current = { x: e.clientX, y: e.clientY };
+
+    lastPointer.current = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+
+    setDragginS(false);
   };
 
   const handlePointerMove = (e) => {
-    const deltaX = Math.abs(e.clientX - lastPointer.current.x);
-    const deltaY = Math.abs(e.clientY - lastPointer.current.y);
+    const dx = e.clientX - lastPointer.current.x;
+    const dy = e.clientY - lastPointer.current.y;
 
-    if (deltaX > 4 || deltaY > 4) {
-      isDragging.current = true;
+    if (e.buttons === 1 && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+      if (!isDragging.current) {
+        isDragging.current = true;
+        setDragginS(true);
+      }
     }
 
-    if (e.buttons === 1) {
-      rawX.set(rawX.get() + (e.clientX - lastPointer.current.x));
-      rawY.set(rawY.get() + (e.clientY - lastPointer.current.y));
-      lastPointer.current = { x: e.clientX, y: e.clientY };
-    }
+    if (e.buttons !== 1) return;
+
+    rawX.set(rawX.get() + dx);
+    rawY.set(rawY.get() + dy);
+
+    lastPointer.current = {
+      x: e.clientX,
+      y: e.clientY,
+    };
   };
 
   const handlePointerUp = () => {
-    setTimeout(() => {
-      isDragging.current = false;
-    }, 50);
+    isDragging.current = false;
+    setDragginS(false);
   };
 
   const handleCardClick = useCallback((itemData, cellIndex) => {
@@ -323,7 +336,6 @@ export default function GalleryHero({ loading }) {
     <main
       className="relative w-screen h-svh overflow-hidden bg-p text-s select-none
     overscroll-none touch-none"
-      data-cursor="drag"
     >
       <motion.nav
         initial={{ opacity: 0 }}
@@ -410,6 +422,8 @@ export default function GalleryHero({ loading }) {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerUp}
         className="relative size-full overflow-hidden overscroll-none touch-none"
       >
         <div className="absolute inset-0 pointer-events-auto">

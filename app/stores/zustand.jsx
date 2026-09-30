@@ -1,7 +1,8 @@
 import { create } from "zustand";
 
-export const useFilter = create((set) => ({
-  filterModal: false,
+export const useDragging = create((set) => ({
+  dragginS: false,
 
-  setFilterModal: (value) => set({ filterModal: value }),
+  setDragginS: (value) =>
+    set((state) => (state.dragginS === value ? state : { dragginS: value })),
 }));
