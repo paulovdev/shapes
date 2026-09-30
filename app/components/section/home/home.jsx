@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Hero from "./hero";
 import Nav from "../../nav";
-
 import Loader from "../../loader";
 
 const HomePage = () => {

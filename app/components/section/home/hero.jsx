@@ -14,6 +14,7 @@ import { FaLink, FaFolderOpen, FaCube } from "react-icons/fa6";
 import Scramble from "../../common/scramble";
 import { shapesData } from "@/app/data/projects.data";
 import { useDragging } from "@/app/stores/zustand";
+import DitherImage from "../../dither/dither-image/dither-image";
 
 const CATEGORIES = ["ALL", "ABSTRACT", "ORGANIC", "ARCHITECTURAL"];
 
@@ -104,11 +105,7 @@ function InfiniteCardCell({
 
         <div className="relative my-2 flex w-full flex-1 items-center justify-center overflow-hidden rounded-lg p-2">
           {itemData.img ? (
-            <img
-              src={itemData.img}
-              alt={itemData?.title || "3D Shape"}
-              className="size-full object-contain mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-110"
-            />
+            <DitherImage src={itemData.img} alt="" />
           ) : (
             <div className="flex size-full items-center justify-center text-s/30">
               <FaCube className="animate-pulse text-4xl" />
@@ -135,7 +132,7 @@ function ShapeDetailModal({ project, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-200 flex items-center justify-center p-5 md:p-8 bg-s/60 backdrop-blur-md"
+      className="fixed inset-0 z-200 flex items-center justify-center p-5 md:p-8 bg-p/60 backdrop-blur-md"
       onClick={onClose}
       data-cursor="normal"
     >
@@ -145,54 +142,50 @@ function ShapeDetailModal({ project, onClose }) {
         exit={{ scale: 0.9, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-200 bg-s border border-s/20 p-5 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-200 bg-p border border-p/20 p-5 shadow-2xl overflow-hidden"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-p hover:bg-p/90 text-s transition-colors"
+          className="absolute top-4 right-4 p-2 bg-s hover:bg-s/90 text-p transition-colors"
           data-cursor="hover"
         >
-          <MdClose className="text-[1.25em] text-s" />
+          <MdClose className="text-[1.25em] text-p" />
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-          <div className="w-full h-100 p-5 max-md:h-50 flex items-center justify-center border border-p/10">
-            <img
-              src={project.img}
-              alt={project.title}
-              className="size-full object-contain"
-            />
+          <div className="w-full h-100 p-5 max-md:h-60 flex items-center justify-center border border-s/10">
+            <DitherImage src={project.img} alt={project.title} />
           </div>
 
           <div className="flex flex-col gap-5">
             <div>
-              <span className="text-[.8em] text-s font-semibold uppercase bg-p px-2 py-0.5">
+              <span className="text-[.8em] text-p font-semibold uppercase bg-s px-2 py-0.5">
                 {project.category}
               </span>
-              <h2 className="text-[1.25em] text-p font-semibold uppercase mt-2">
+              <h2 className="text-[1.25em] text-s font-semibold uppercase mt-2">
                 {project.title}
               </h2>
-              <p className="text-[.8em] text-p/50 font-semibold">
+              <p className="text-[.8em] text-s/50 font-semibold">
                 {project.year} ARCHIVE EDITION
               </p>
             </div>
 
-            <p className="text-[.8em] text-p font-semibold">{project.desc}</p>
+            <p className="text-[.8em] text-s font-semibold">{project.desc}</p>
 
             <div className="space-y-2 border-t border-p/10 pt-4">
               <div className="flex justify-between">
-                <span className="text-[.8em] text-p/50 font-semibold">
+                <span className="text-[.8em] text-s/50 font-semibold">
                   POLYGON COUNT:
                 </span>
-                <span className="text-[.8em] text-p font-semibold">
+                <span className="text-[.8em] text-s font-semibold">
                   {project.polyCount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[.8em] text-p/50 font-semibold truncate">
+                <span className="text-[.8em] text-s/50 font-semibold truncate">
                   SURFACE MATERIAL:
                 </span>
-                <span className="text-[.8em] text-p font-semibold">
+                <span className="text-[.8em] text-s font-semibold">
                   {project.material}
                 </span>
               </div>
@@ -202,7 +195,7 @@ function ShapeDetailModal({ project, onClose }) {
               {project.stack?.map((st, i) => (
                 <span
                   key={i}
-                  className="text-[.8em] text-p font-semibold bg-p/5 border border-p/10 px-2 py-1"
+                  className="text-[.8em] text-s font-semibold bg-p/5 border border-s/10 px-2 py-1"
                 >
                   {st}
                 </span>
@@ -210,7 +203,7 @@ function ShapeDetailModal({ project, onClose }) {
             </div>
 
             <button
-              className="mt-2 w-full py-2.5 bg-p text-[.8em] text-s font-semibold 
+              className="mt-2 w-full py-2.5 bg-s text-[.8em] text-p font-semibold 
             flex items-center justify-center gap-2"
             >
               <FaFolderOpen /> DOWNLOAD 3D ASSETS
@@ -230,6 +223,7 @@ export default function GalleryHero({ loading }) {
   const [vw, setVw] = useState(1920);
   const [vh, setVh] = useState(1080);
   const { setDragginS } = useDragging();
+  const clickLock = useRef(false);
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
 
@@ -307,9 +301,16 @@ export default function GalleryHero({ loading }) {
   };
 
   const handleCardClick = useCallback((itemData, cellIndex) => {
-    if (isDragging.current) return;
+    if (isDragging.current || clickLock.current) return;
+
+    clickLock.current = true;
+
     setSelectedProject(itemData);
     setSelectedCellIndex(cellIndex);
+
+    setTimeout(() => {
+      clickLock.current = false;
+    }, 50);
   }, []);
 
   const COLUMN_OFFSETS = [0, CELL_H * 0.45, -CELL_H * 0.25, CELL_H * 0.35];
@@ -411,7 +412,7 @@ export default function GalleryHero({ loading }) {
           );
         })}
       </div>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <section
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}

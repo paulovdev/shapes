@@ -2,6 +2,7 @@
 import { motion, useAnimate } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { IoCubeOutline } from "react-icons/io5";
+import DitherImage from "./dither/dither-image/dither-image";
 
 export default function Loader({ onFinish }) {
   const [scope, animate] = useAnimate();
@@ -112,7 +113,7 @@ export default function Loader({ onFinish }) {
       );
       await animate(
         star,
-        { scale: 500 },
+        { scale: 700 },
         { duration: 1, ease: [0.76, 0, 0.24, 1] },
       );
 
@@ -139,7 +140,9 @@ export default function Loader({ onFinish }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="bg-p size-5"></div>
+          <div className="bg-transparent size-15">
+            <DitherImage src="/images/spin.gif" alt="loading" />
+          </div>
         </motion.div>
       </motion.div>
     </div>

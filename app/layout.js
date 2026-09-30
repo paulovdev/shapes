@@ -1,6 +1,7 @@
 import { Chivo } from "next/font/google";
 import "./globals.css";
-import CustomCursor from "./components/common/custom-cursor";
+
+import DitherCursorTrail from "./components/dither/dither-cursor-trail";
 
 const chivo = Chivo({
   variable: "--font-chivo",
@@ -19,9 +20,7 @@ export default function RootLayout({ children }) {
       className={`${chivo.variable} bg-s h-full antialiased noise`}
     >
       <body className="min-h-full cursor-default!">
-        <CustomCursor />
-
-        {children}
+        {children} <DitherCursorTrail />
       </body>
     </html>
   );
