@@ -47,6 +47,7 @@ function InfiniteCardCell({
     canvasX,
     (currentX) => mod(baseX + currentX + cellW, totalW) - cellW,
   );
+
   const renderY = useTransform(
     canvasY,
     (currentY) => mod(baseY + currentY + cellH, totalH) - cellH,
@@ -54,23 +55,14 @@ function InfiniteCardCell({
 
   const itemData = filteredData[cellIndex % numItems] || {};
 
+  const animationDelay = loading
+    ? Math.min((row + col) * 0.035, 0.9) + 5
+    : Math.min((row + col) * 0.035, 0.9);
   return (
     <motion.div
       onClick={() => onSelect(itemData, cellIndex)}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
-      initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
-      animate={{
-        clipPath:
-          isAnyOpen && !isActive
-            ? "inset(100% 0% 0% 0%)"
-            : "inset(0% 0% 0% 0%)",
-      }}
-      transition={{
-        duration: 1,
-        delay: loading ? 5 + cellIndex * 0.015 : cellIndex * 0.035,
-        ease: [0.76, 0, 0.24, 1],
-      }}
       style={{
         position: "absolute",
         left: 0,
@@ -83,27 +75,34 @@ function InfiniteCardCell({
       className="group select-none"
       data-cursor="hover"
     >
-      <div className="relative size-full p-4 flex flex-col justify-between border-2 border-transparent ">
-        <div
-          className="flex justify-between items-center text-p uppercase tracking-[-0.01em]
-      group-hover:opacity-100 opacity-0 transition-all"
-        >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: 0.7,
+          delay: animationDelay,
+          ease: [0.76, 0, 0.24, 1],
+        }}
+        className="relative flex size-full flex-col justify-between border-2 border-transparent p-4"
+      >
+        <div className="flex items-center justify-between text-p uppercase tracking-[-0.01em] opacity-0 transition-all group-hover:opacity-100">
           <Scramble
             text={itemData?.year || "2024"}
             trigger={Boolean(hover)}
-            className="text-[.8em] text-s font-semibold uppercase"
+            className="text-[.8em] font-semibold uppercase text-s"
           />
 
-          <span className="truncate max-w-[130px] text-right">
+          <span className="max-w-[130px] truncate text-right">
             <Scramble
               text={itemData?.title || "UNTITLED"}
               trigger={Boolean(hover)}
-              className="text-[.8em] text-s font-semibold uppercase"
+              className="text-[.8em] font-semibold uppercase text-s"
             />
           </span>
         </div>
 
-        <div className="relative my-2 w-full flex-1 flex items-center justify-center p-2 overflow-hidden rounded-lg ">
+        <div className="relative my-2 flex w-full flex-1 items-center justify-center overflow-hidden rounded-lg p-2">
           {itemData.img ? (
             <img
               src={itemData.img}
@@ -111,24 +110,19 @@ function InfiniteCardCell({
               className="size-full object-contain mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-110"
             />
           ) : (
-            <div className="size-full flex items-center justify-center text-s/30">
-              <FaCube className="text-4xl animate-pulse" />
+            <div className="flex size-full items-center justify-center text-s/30">
+              <FaCube className="animate-pulse text-4xl" />
             </div>
           )}
 
-          <div
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300
-          "
-          >
-            <span
-              className="bg-s text-[.8em] text-p font-semibold uppercase px-3 py-1.5
-            flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-transform"
-            >
-              <FaLink className="text-[0.9em]" /> INSPECT SHAPE
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <span className="flex -translate-y-0 items-center gap-1.5 bg-s px-3 py-1.5 text-[.8em] font-semibold uppercase text-p transition-transform group-hover:translate-y-0">
+              <FaLink className="text-[0.9em]" />
+              INSPECT SHAPE
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -162,7 +156,7 @@ function ShapeDetailModal({ project, onClose }) {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-          <div className="w-full h-75 p-5 max-md:h-50 flex items-center justify-center border border-p/10">
+          <div className="w-full h-100 p-5 max-md:h-50 flex items-center justify-center border border-p/10">
             <img
               src={project.img}
               alt={project.title}
@@ -417,40 +411,42 @@ export default function GalleryHero({ loading }) {
           );
         })}
       </div>
-
-      <section
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onPointerLeave={handlePointerUp}
-        className="relative size-full overflow-hidden overscroll-none touch-none"
-      >
-        <div className="absolute inset-0 pointer-events-auto">
-          {gridCells.map(({ col, row, cellIndex, offsetY }) => (
-            <InfiniteCardCell
-              key={`cell-${row}-${col}`}
-              col={col}
-              row={row}
-              cellIndex={cellIndex}
-              offsetY={offsetY}
-              cellW={CELL_W}
-              cellH={CELL_H}
-              cardW={CARD_W}
-              cardH={CARD_H}
-              totalW={TOTAL_GRID_W}
-              totalH={TOTAL_GRID_H}
-              canvasX={springX}
-              canvasY={springY}
-              filteredData={filteredData}
-              numItems={numItems}
-              onSelect={handleCardClick}
-              isActive={selectedCellIndex === cellIndex}
-              isAnyOpen={!!selectedProject}
-            />
-          ))}
-        </div>
-      </section>
+      <AnimatePresence>
+        <section
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          className="relative size-full overflow-hidden overscroll-none touch-none"
+        >
+          <div className="absolute inset-0 pointer-events-auto">
+            {gridCells.map(({ col, row, cellIndex, offsetY }) => (
+              <InfiniteCardCell
+                key={`cell-${row}-${col}-${activeCategory}`}
+                col={col}
+                row={row}
+                cellIndex={cellIndex}
+                offsetY={offsetY}
+                cellW={CELL_W}
+                cellH={CELL_H}
+                cardW={CARD_W}
+                cardH={CARD_H}
+                totalW={TOTAL_GRID_W}
+                totalH={TOTAL_GRID_H}
+                canvasX={springX}
+                canvasY={springY}
+                filteredData={filteredData}
+                numItems={numItems}
+                onSelect={handleCardClick}
+                isActive={selectedCellIndex === cellIndex}
+                isAnyOpen={!!selectedProject}
+                loading={loading}
+              />
+            ))}
+          </div>
+        </section>
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedProject && (

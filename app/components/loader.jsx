@@ -112,7 +112,7 @@ export default function Loader({ onFinish }) {
       );
       await animate(
         star,
-        { scale: 1000 },
+        { scale: 500 },
         { duration: 1, ease: [0.76, 0, 0.24, 1] },
       );
 
@@ -132,15 +132,15 @@ export default function Loader({ onFinish }) {
           ref={pRef}
           className="fixed z-100 text-p text-[.8em] font-normal uppercase mix-blend-difference"
         />
-        <motion.p
+        <motion.div
           ref={starRef}
           className="fixed z-100 mix-blend-difference"
           initial={{ opacity: 0, bottom: 25 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <IoCubeOutline className="text-p text-[5em] spin" />
-        </motion.p>
+          <div className="bg-p size-5"></div>
+        </motion.div>
       </motion.div>
     </div>
   );
