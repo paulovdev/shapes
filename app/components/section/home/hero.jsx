@@ -151,7 +151,7 @@ function ShapeDetailModal({ project, onClose }) {
         exit={{ scale: 0.9, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-200 bg-s border border-s/20 p-6 md:p-8 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-200 bg-s border border-s/20 p-5 shadow-2xl overflow-hidden"
       >
         <button
           onClick={onClose}
@@ -162,7 +162,7 @@ function ShapeDetailModal({ project, onClose }) {
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-          <div className="w-full h-75 p-5 flex items-center justify-center border border-p/10">
+          <div className="w-full h-75 p-5 max-md:h-50 flex items-center justify-center border border-p/10">
             <img
               src={project.img}
               alt={project.title}
