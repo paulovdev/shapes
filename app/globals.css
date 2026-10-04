@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-p: #e8e6e0;
+  --color-p: #eeeeee;
   --color-s: #000000;
 
   --breakpoint-full-ds: 1900px;
@@ -9,6 +9,9 @@
   --breakpoint-lg: 992px;
   --breakpoint-md: 768px;
   --breakpoint-sm: 400px;
+
+  --font-chivo: "chivo";
+  --font-instrument: "Instrument Sans";
 }
 
 html {
@@ -24,7 +27,7 @@ body {
   margin: 0;
   width: 100dvw;
   overflow-x: hidden;
-  font-family: "chivo", sans-serif;
+  font-family: "chivo", sans-serif !important;
 }
 
 ::-webkit-scrollbar {
@@ -38,7 +41,7 @@ body {
   width: 100vw;
   height: 100vh;
   content: "";
-  opacity: 0.03;
+  opacity: 0.02;
   z-index: 1000;
   pointer-events: none;
   background: url("/noise.gif");

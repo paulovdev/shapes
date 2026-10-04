@@ -1,33 +1,37 @@
 "use client";
-import { useRef, useEffect } from "react";
 
-const CHARS = "!<>-_\\/[]{}—=+*^?#__";
+import { useRef } from "react";
+
+const CHARS = "ABCD0123456789!@#$%^&*()";
 
 export default function ScrambleHover({ text, icon = null, className = "" }) {
   const spanRef = useRef(null);
+  const animFrameId = useRef(null);
 
-  useEffect(() => {
-    if (spanRef.current) {
-      const rect = spanRef.current.getBoundingClientRect();
-      spanRef.current.style.display = "inline-block";
-      spanRef.current.style.width = rect.width + "px";
-      spanRef.current.style.height = rect.height + "px";
-      spanRef.current.style.lineHeight = rect.height + "px";
+  function scrambleText() {
+    const element = spanRef.current;
+    if (!element) return;
+
+    // Cancela qualquer animação anterior que ainda esteja rodando
+    if (animFrameId.current) {
+      cancelAnimationFrame(animFrameId.current);
     }
-  }, [text]);
 
-  function scrambleText(element, text) {
     let frame = 0;
-
     const speed = text.length <= 8 ? 20 : 10;
     const totalFrames = text.length * speed;
-
     const resolved = Array(text.length).fill(false);
 
     function update() {
       let out = "";
 
       for (let i = 0; i < text.length; i++) {
+        // Preserva espaços em branco intactos
+        if (text[i] === " ") {
+          out += " ";
+          continue;
+        }
+
         if (resolved[i]) {
           out += text[i];
           continue;
@@ -44,21 +48,36 @@ export default function ScrambleHover({ text, icon = null, className = "" }) {
       element.textContent = out;
       frame++;
 
-      if (frame <= totalFrames) requestAnimationFrame(update);
-      else element.textContent = text;
+      if (frame <= totalFrames) {
+        animFrameId.current = requestAnimationFrame(update);
+      } else {
+        element.textContent = text;
+      }
     }
 
     update();
   }
 
+  function handleMouseLeave() {
+    // Cancela a animação e restaura o texto original instantaneamente
+    if (animFrameId.current) {
+      cancelAnimationFrame(animFrameId.current);
+    }
+    if (spanRef.current) {
+      spanRef.current.textContent = text;
+    }
+  }
+
   return (
     <span
-      className={`flex items-center gap-2  ${className}`}
-      onMouseEnter={() => scrambleText(spanRef.current, text)}
-      onMouseLeave={() => (spanRef.current.textContent = text)}
+      className={`inline-flex items-center gap-2 cursor-pointer ${className}`}
+      onMouseEnter={scrambleText}
+      onMouseLeave={handleMouseLeave}
     >
-      {icon && <span>{icon}</span>}
-      <span ref={spanRef}>{text}</span>
+      {icon && <span className="flex-shrink-0">{icon}</span>}
+      <span ref={spanRef} className="inline-block whitespace-nowrap">
+        {text}
+      </span>
     </span>
   );
 }

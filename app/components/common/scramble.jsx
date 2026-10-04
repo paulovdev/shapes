@@ -1,7 +1,8 @@
 "use client";
+
 import { useEffect, useRef, useCallback } from "react";
 
-const CHARS = "!<>-_\\/[]{}—=+*^?#__";
+const CHARS = "ABCD0123456789!@#$%^&*()";
 
 export default function Scramble({
   text,
@@ -29,6 +30,12 @@ export default function Scramble({
       let out = "";
 
       for (let i = 0; i < text.length; i++) {
+        // Preserva espaços em branco intactos
+        if (text[i] === " ") {
+          out += " ";
+          continue;
+        }
+
         if (resolved[i]) {
           out += text[i];
           continue;
@@ -55,21 +62,15 @@ export default function Scramble({
     update();
   }, [text]);
 
-  // Mede dimensões na primeira renderização
-  useEffect(() => {
-    if (spanRef.current) {
-      const rect = spanRef.current.getBoundingClientRect();
-      spanRef.current.style.display = "inline-block";
-      spanRef.current.style.width = rect.width + "px";
-      spanRef.current.style.height = rect.height + "px";
-      spanRef.current.style.lineHeight = rect.height + "px";
-    }
-  }, [text]);
-
-  // Reanima sempre que `trigger` mudar para true
+  // Reanima sempre que `trigger` for verdadeiro
   useEffect(() => {
     if (trigger) {
       startAnimation();
+    } else if (spanRef.current) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      spanRef.current.textContent = text;
     }
 
     return () => {
@@ -77,12 +78,12 @@ export default function Scramble({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [trigger, startAnimation]);
+  }, [trigger, startAnimation, text]);
 
   return (
-    <span className={`flex items-center gap-2 ${className}`}>
-      {icon && <span>{icon}</span>}
-      <span ref={spanRef} className="overflow-hidden">
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      {icon && <span className="flex-shrink-0">{icon}</span>}
+      <span ref={spanRef} className=" inline-block whitespace-nowrap">
         {text}
       </span>
     </span>

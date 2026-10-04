@@ -7,9 +7,9 @@ import * as THREE from "three";
 
 const DEFAULTS = {
   mode: "ordered",
-  pixelSize: 3,
+  pixelSize: 1,
 
-  gridSize: 3,
+  gridSize: 4,
   threshold: 0.5,
   brightness: 0,
   contrast: 1,

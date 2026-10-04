@@ -19,8 +19,8 @@ type DitherCursorTrailProps = {
   decayDuration?: number;
 };
 
-const DEFAULT_PIXEL_SIZE = 8;
-const DEFAULT_COLOR: [number, number, number] = [1, 1, 1];
+const DEFAULT_PIXEL_SIZE = 6;
+const DEFAULT_COLOR: [number, number, number] = [0, 0, 0];
 
 function resolveColor(
   color: string | [number, number, number],

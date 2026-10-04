@@ -1,225 +1,37 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   motion,
   useMotionValue,
   useSpring,
-  useTransform,
   AnimatePresence,
 } from "framer-motion";
-import { MdClose } from "react-icons/md";
-import { FaLink, FaFolderOpen, FaCube } from "react-icons/fa6";
 
-import Scramble from "../../common/scramble";
-import { shapesData } from "@/app/data/projects.data";
-import { useDragging } from "@/app/stores/zustand";
-import DitherImage from "../../dither/dither-image/dither-image";
+import { products } from "@/app/data/projects.data";
+import { useDragging, useCartStore } from "@/app/stores/zustand";
 
-const CATEGORIES = ["ALL", "ABSTRACT", "ORGANIC", "ARCHITECTURAL"];
+import { ProductModal } from "./product-modal";
+import { ProductCard } from "./product-card";
+import { CartDrawer } from "../../ui/cart";
+import { FilterDropdown } from "../../ui/filter-dropdown";
+import Image from "next/image";
 
-const mod = (n, m) => ((n % m) + m) % m;
-
-function InfiniteCardCell({
-  col,
-  row,
-  cellIndex,
-  cellW,
-  cellH,
-  cardW,
-  cardH,
-  totalW,
-  totalH,
-  canvasX,
-  canvasY,
-  filteredData,
-  numItems,
-  onSelect,
-  isActive,
-  isAnyOpen,
-  loading,
-  offsetY = 0,
-}) {
-  const baseX = col * cellW;
-  const baseY = row * cellH + offsetY;
-  const [hover, setHover] = useState(false);
-
-  const renderX = useTransform(
-    canvasX,
-    (currentX) => mod(baseX + currentX + cellW, totalW) - cellW,
-  );
-
-  const renderY = useTransform(
-    canvasY,
-    (currentY) => mod(baseY + currentY + cellH, totalH) - cellH,
-  );
-
-  const itemData = filteredData[cellIndex % numItems] || {};
-
-  const animationDelay = loading
-    ? Math.min((row + col) * 0.035, 0.9) + 5
-    : Math.min((row + col) * 0.035, 0.9);
-  return (
-    <motion.div
-      onClick={() => onSelect(itemData, cellIndex)}
-      onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
-      style={{
-        position: "absolute",
-        left: 0,
-        top: 0,
-        x: renderX,
-        y: renderY,
-        width: cardW,
-        height: cardH,
-      }}
-      className="group select-none"
-      data-cursor="hover"
-    >
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: 0.7,
-          delay: animationDelay,
-          ease: [0.76, 0, 0.24, 1],
-        }}
-        className="relative flex size-full flex-col justify-between border-2 border-transparent p-4"
-      >
-        <div className="flex items-center justify-between text-p uppercase tracking-[-0.01em] opacity-0 transition-all group-hover:opacity-100">
-          <Scramble
-            text={itemData?.year || "2024"}
-            trigger={Boolean(hover)}
-            className="text-[.8em] font-semibold uppercase text-s"
-          />
-
-          <span className="max-w-[130px] truncate text-right">
-            <Scramble
-              text={itemData?.title || "UNTITLED"}
-              trigger={Boolean(hover)}
-              className="text-[.8em] font-semibold uppercase text-s"
-            />
-          </span>
-        </div>
-
-        <div className="relative my-2 flex w-full flex-1 items-center justify-center overflow-hidden rounded-lg p-2">
-          {itemData.img ? (
-            <DitherImage src={itemData.img} alt="" />
-          ) : (
-            <div className="flex size-full items-center justify-center text-s/30">
-              <FaCube className="animate-pulse text-4xl" />
-            </div>
-          )}
-
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <span className="flex -translate-y-0 items-center gap-1.5 bg-s px-3 py-1.5 text-[.8em] font-semibold uppercase text-p transition-transform group-hover:translate-y-0">
-              <FaLink className="text-[0.9em]" />
-              INSPECT SHAPE
-            </span>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function ShapeDetailModal({ project, onClose }) {
-  if (!project) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-200 flex items-center justify-center p-5 md:p-8 bg-p/60 backdrop-blur-md"
-      onClick={onClose}
-      data-cursor="normal"
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-200 bg-p border border-p/20 p-5 shadow-2xl overflow-hidden"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-s hover:bg-s/90 text-p transition-colors"
-          data-cursor="hover"
-        >
-          <MdClose className="text-[1.25em] text-p" />
-        </button>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-          <div className="w-full h-100 p-5 max-md:h-60 flex items-center justify-center border border-s/10">
-            <DitherImage src={project.img} alt={project.title} />
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <div>
-              <span className="text-[.8em] text-p font-semibold uppercase bg-s px-2 py-0.5">
-                {project.category}
-              </span>
-              <h2 className="text-[1.25em] text-s font-semibold uppercase mt-2">
-                {project.title}
-              </h2>
-              <p className="text-[.8em] text-s/50 font-semibold">
-                {project.year} ARCHIVE EDITION
-              </p>
-            </div>
-
-            <p className="text-[.8em] text-s font-semibold">{project.desc}</p>
-
-            <div className="space-y-2 border-t border-p/10 pt-4">
-              <div className="flex justify-between">
-                <span className="text-[.8em] text-s/50 font-semibold">
-                  POLYGON COUNT:
-                </span>
-                <span className="text-[.8em] text-s font-semibold">
-                  {project.polyCount}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[.8em] text-s/50 font-semibold truncate">
-                  SURFACE MATERIAL:
-                </span>
-                <span className="text-[.8em] text-s font-semibold">
-                  {project.material}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 pt-2">
-              {project.stack?.map((st, i) => (
-                <span
-                  key={i}
-                  className="text-[.8em] text-s font-semibold bg-p/5 border border-s/10 px-2 py-1"
-                >
-                  {st}
-                </span>
-              ))}
-            </div>
-
-            <button
-              className="mt-2 w-full py-2.5 bg-s text-[.8em] text-p font-semibold 
-            flex items-center justify-center gap-2"
-            >
-              <FaFolderOpen /> DOWNLOAD 3D ASSETS
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
+const CATEGORIES = ["ALL", "OUTERWEAR", "STREETWEAR", "TECHWEAR"];
 
 export default function GalleryHero({ loading }) {
   const [activeCategory, setActiveCategory] = useState("ALL");
+  const [sortBy, setSortBy] = useState("DEFAULT");
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedCellIndex, setSelectedCellIndex] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const { cart, purchasedIds, addToCart, isInCart, openCart } = useCartStore();
   const [vw, setVw] = useState(1920);
   const [vh, setVh] = useState(1080);
   const { setDragginS } = useDragging();
@@ -227,9 +39,25 @@ export default function GalleryHero({ loading }) {
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
 
-  const filteredData = shapesData.filter(
-    (item) => activeCategory === "ALL" || item.category === activeCategory,
-  );
+  const filteredData = useMemo(() => {
+    let result = products.filter(
+      (item) => activeCategory === "ALL" || item.category === activeCategory,
+    );
+
+    if (sortBy === "PRICE_ASC") {
+      result = [...result].sort(
+        (a, b) => parseFloat(a.price || 24) - parseFloat(b.price || 24),
+      );
+    } else if (sortBy === "PRICE_DESC") {
+      result = [...result].sort(
+        (a, b) => parseFloat(b.price || 24) - parseFloat(a.price || 24),
+      );
+    } else if (sortBy === "NAME_ASC") {
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    return result;
+  }, [activeCategory, sortBy]);
 
   useEffect(() => {
     const update = () => {
@@ -241,9 +69,9 @@ export default function GalleryHero({ loading }) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const CARD_W = vw <= 768 ? 240 : vw <= 992 ? 280 : 240;
-  const CARD_H = vw <= 768 ? 280 : vw <= 992 ? 320 : 280;
-  const GAP = vw <= 768 ? 75 : 150;
+  const CARD_W = vw <= 768 ? 250 : vw <= 992 ? 280 : 275;
+  const CARD_H = vw <= 768 ? 400 : vw <= 992 ? 320 : 500;
+  const GAP = vw <= 768 ? 100 : 150;
 
   const CELL_W = CARD_W + GAP;
   const CELL_H = CARD_H + GAP;
@@ -264,12 +92,7 @@ export default function GalleryHero({ loading }) {
 
   const handlePointerDown = (e) => {
     isDragging.current = false;
-
-    lastPointer.current = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
+    lastPointer.current = { x: e.clientX, y: e.clientY };
     setDragginS(false);
   };
 
@@ -289,10 +112,7 @@ export default function GalleryHero({ loading }) {
     rawX.set(rawX.get() + dx);
     rawY.set(rawY.get() + dy);
 
-    lastPointer.current = {
-      x: e.clientX,
-      y: e.clientY,
-    };
+    lastPointer.current = { x: e.clientX, y: e.clientY };
   };
 
   const handlePointerUp = () => {
@@ -304,13 +124,12 @@ export default function GalleryHero({ loading }) {
     if (isDragging.current || clickLock.current) return;
 
     clickLock.current = true;
-
     setSelectedProject(itemData);
     setSelectedCellIndex(cellIndex);
 
     setTimeout(() => {
       clickLock.current = false;
-    }, 50);
+    }, 150);
   }, []);
 
   const COLUMN_OFFSETS = [0, CELL_H * 0.45, -CELL_H * 0.25, CELL_H * 0.35];
@@ -328,92 +147,80 @@ export default function GalleryHero({ loading }) {
   }
 
   return (
-    <main
-      className="relative w-screen h-svh overflow-hidden bg-p text-s select-none
-    overscroll-none touch-none"
-    >
+    <main className="relative w-screen h-svh overflow-hidden bg-p text-s select-none overscroll-none touch-none">
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{
           duration: 1,
-          delay: loading ? 5 : 0,
+          delay: loading ? 6 : 0,
           ease: [0.76, 0, 0.24, 1],
         }}
-        className="fixed top-0 left-0 w-full p-4 md:p-6 flex items-center justify-center z-100 select-none pointer-events-none"
+        className="fixed top-0 left-0 w-full p-4 flex items-center justify-center z-100 select-none pointer-events-none"
       >
-        <div
-          onPointerLeave={() => setHoveredCategory(null)}
-          className="hidden md:flex items-center gap-1 bg-s text-p p-1.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat;
-            const isHovered = hoveredCategory === cat;
+        <div className="flex items-center gap-2.5">
+          <div
+            onPointerLeave={() => setHoveredCategory(null)}
+            className="p-2 h-10 flex items-center gap-1 font-chivo bg-s text-p select-none pointer-events-auto"
+          >
+            {CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat;
+              const isHovered = hoveredCategory === cat;
+              const isTarget = hoveredCategory ? isHovered : isActive;
 
-            const isTarget = hoveredCategory ? isHovered : isActive;
-
-            return (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                onPointerEnter={() => setHoveredCategory(cat)}
-                className={`relative px-4 py-1 font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
-                  isTarget ? "text-s" : "text-p hover:opacity-80"
-                }`}
-                data-cursor="hover"
-              >
-                {isTarget && (
-                  <motion.div
-                    layoutId="activeCategoryTab"
-                    className="absolute inset-0 bg-p z-[-1]"
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 30,
-                    }}
-                  />
-                )}
-                {cat}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  onPointerEnter={() => setHoveredCategory(cat)}
+                  className={`relative px-4 py-1 text-[.8em] font-semibold uppercase cursor-default transition-colors duration-200 z-10 ${
+                    isTarget ? "text-s" : "text-p hover:opacity-80"
+                  }`}
+                  data-cursor="hover"
+                >
+                  {isTarget && (
+                    <motion.div
+                      layoutId="activeCategoryTab"
+                      className="absolute inset-0 bg-p z-[-1]"
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+          <div className="pointer-events-auto">
+            <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
+          </div>
         </div>
       </motion.nav>
 
-      <div
-        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-100 flex items-center gap-1 
-      bg-s text-p p-1.5 shadow-2xl border border-white/20 select-none"
-      >
-        {CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat;
-
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`relative px-3 py-1 font-semibold text-[.8em] uppercase transition-colors duration-200 z-10 ${
-                isActive ? "text-s" : "text-p hover:opacity-80"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeMobileCategoryTab"
-                  className="absolute inset-0 bg-p z-[-1]"
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 30,
-                  }}
-                />
-              )}
-              {cat}
-            </button>
-          );
-        })}
-      </div>
       <AnimatePresence mode="wait">
-        <section
+        <motion.section
+          key={`${activeCategory}-${sortBy}`}
+          initial={{
+            clipPath: "inset(100% 0% 0% 0%)",
+            scale: 0.98,
+          }}
+          animate={{
+            clipPath: "inset(0% 0% 0% 0%)",
+            scale: 1,
+          }}
+          exit={{
+            clipPath: "inset(0% 0% 100% 0%)",
+            scale: 0.98,
+          }}
+          transition={{
+            duration: 0.8,
+            delay: loading ? 6 : 0,
+            ease: [0.76, 0, 0.24, 1],
+          }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -423,8 +230,8 @@ export default function GalleryHero({ loading }) {
         >
           <div className="absolute inset-0 pointer-events-auto">
             {gridCells.map(({ col, row, cellIndex, offsetY }) => (
-              <InfiniteCardCell
-                key={`cell-${row}-${col}-${activeCategory}`}
+              <ProductCard
+                key={`cell-${row}-${col}-${cellIndex}-${activeCategory}-${sortBy}`}
                 col={col}
                 row={row}
                 cellIndex={cellIndex}
@@ -440,26 +247,62 @@ export default function GalleryHero({ loading }) {
                 filteredData={filteredData}
                 numItems={numItems}
                 onSelect={handleCardClick}
-                isActive={selectedCellIndex === cellIndex}
-                isAnyOpen={!!selectedProject}
-                loading={loading}
+                animationIndex={cellIndex}
               />
             ))}
           </div>
-        </section>
+        </motion.section>
       </AnimatePresence>
 
       <AnimatePresence>
         {selectedProject && (
-          <ShapeDetailModal
+          <ProductModal
             project={selectedProject}
             onClose={() => {
               setSelectedProject(null);
               setSelectedCellIndex(null);
             }}
+            onAddToCart={(project) => {
+              addToCart(project);
+              openCart();
+            }}
+            purchasedIds={purchasedIds}
+            isInCart={isInCart}
           />
         )}
       </AnimatePresence>
+
+      <CartDrawer />
+
+      <div className="absolute size-full inset-0 px-2.5 py-5 flex items-end justify-center pointer-events-none">
+        <motion.figure
+          initial={{
+            clipPath: "inset(100% 0% 0% 0%)",
+            scale: 0.98,
+          }}
+          animate={{
+            clipPath: "inset(0% 0% 0% 0%)",
+            scale: 1,
+          }}
+          exit={{
+            clipPath: "inset(0% 0% 100% 0%)",
+            scale: 0.98,
+          }}
+          transition={{
+            duration: 0.8,
+            delay: loading ? 6 : 0,
+            ease: [0.76, 0, 0.24, 1],
+          }}
+        >
+          <Image
+            alt=""
+            src="/images/bars.png"
+            width={423}
+            height={416}
+            className="object-cover w-45 h-8"
+          />
+        </motion.figure>
+      </div>
     </main>
   );
 }

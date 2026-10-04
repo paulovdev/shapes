@@ -10,7 +10,7 @@ const HomePage = () => {
 
   return (
     <>
-      {loading && <Loader onFinish={() => setLoading(false)} />}
+      {loading && <Loader setLoading={setLoading} />}
 
       <Nav />
       <main className="w-full h-screen overflow-hidden">

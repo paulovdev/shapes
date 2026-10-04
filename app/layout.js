@@ -1,7 +1,12 @@
-import { Chivo } from "next/font/google";
+import { Instrument_Sans, Chivo } from "next/font/google";
 import "./globals.css";
 
-import DitherCursorTrail from "./components/dither/dither-cursor-trail";
+import CustomCursor from "./components/common/custom-cursor";
+ 
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
+  subsets: ["latin"],
+});
 
 const chivo = Chivo({
   variable: "--font-chivo",
@@ -17,10 +22,12 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${chivo.variable} bg-s h-full antialiased noise`}
+      className={`${instrumentSans.variable} ${chivo.variable} bg-s h-full antialiased noise`}
     >
-      <body className="min-h-full cursor-default!">
-        {children} <DitherCursorTrail />
+      <body className="min-h-full cursor-default! noise">
+        <CustomCursor />
+
+        {children}
       </body>
     </html>
   );

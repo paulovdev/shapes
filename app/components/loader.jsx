@@ -1,14 +1,12 @@
 "use client";
 import { motion, useAnimate } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { IoCubeOutline } from "react-icons/io5";
-import DitherImage from "./dither/dither-image/dither-image";
 
-export default function Loader({ onFinish }) {
+export default function Loader({ setLoading }) {
   const [scope, animate] = useAnimate();
   const pRef = useRef(null);
   const starRef = useRef(null);
-  const CHARS = "!<>-_\\/[]{}—=+*^?#__";
+  const CHARS = "ABCD0123456789!@#$%^&*()";
 
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -107,17 +105,23 @@ export default function Loader({ onFinish }) {
         { duration: 1.1, ease: [0.76, 0, 0.24, 1] },
       );
       await animate(
+        star,
+        { rotate: 120 },
+        { duration: 1, ease: [0.76, 0, 0.24, 1] },
+      );
+      await animate(
         p,
         { x: -rect.left + 20, y: -rect.top + 20 },
         { duration: 1.1, ease: [0.76, 0, 0.24, 1] },
       );
+      animate(star, { rotate: 120 }, { duration: 1, ease: [0.76, 0, 0.24, 1] });
       await animate(
         star,
         { scale: 700 },
         { duration: 1, ease: [0.76, 0, 0.24, 1] },
       );
 
-      onFinish?.();
+      setLoading(false);
     }
 
     runAnim();
@@ -140,9 +144,7 @@ export default function Loader({ onFinish }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="bg-transparent size-15">
-            <DitherImage src="/images/spin.gif" alt="loading" />
-          </div>
+          <div className="bg-p size-5"></div>
         </motion.div>
       </motion.div>
     </div>
