@@ -1,9 +1,64 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdMoreVert, MdSort, MdCheck } from "react-icons/md";
-import ScrambleHover from "../common/scramble-hover";
+import { wordRevealHover } from "@/app/anim/modal.anim";
+import { wordReveal } from "./reveal-text-hover";
+
+const HoverText = ({ text, hover }) => {
+  return (
+    <motion.div
+      variants={wordRevealHover}
+      initial="initial"
+      animate={hover ? "animate" : "initial"}
+      className="flex flex-col items-start justify-center"
+    >
+      <span className="block h-[20px]">{text}</span>
+      <span className="block h-[20px]">{text}</span>
+    </motion.div>
+  );
+};
+
+const RevealText = ({
+  text = "",
+  animate = false,
+  hover = false,
+  delay = 0,
+  className = "",
+}) => {
+  const words = text.split(" ");
+
+  return (
+    <div className={`flex items-center ${className}`}>
+      {words.map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          className="relative inline-block overflow-hidden mr-[0.25em] h-[20px]"
+        >
+          <motion.span
+            variants={wordReveal}
+            initial="initial"
+            animate={animate ? "animate" : "initial"}
+            exit="exit"
+            custom={delay + index * 0.05}
+            className="block will-change-transform"
+          >
+            <motion.span
+              variants={wordRevealHover}
+              initial="initial"
+              animate={hover ? "animate" : "initial"}
+              className="flex flex-col"
+            >
+              <span className="block h-[20px]">{word}</span>
+              <span className="block h-[20px]">{word}</span>
+            </motion.span>
+          </motion.span>
+        </span>
+      ))}
+    </div>
+  );
+};
 
 export function FilterDropdown({
   sortBy,
@@ -11,7 +66,9 @@ export function FilterDropdown({
   showOnlyInStock,
   onToggleInStock,
 }) {
+  const [hover, setHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState(null);
 
   const sortOptions = [
     { label: "DEFAULT", value: "DEFAULT" },
@@ -27,17 +84,24 @@ export function FilterDropdown({
         onClick={() => setIsOpen(false)}
         style={{ display: isOpen ? "block" : "none" }}
       />
+
       <div
-        className="relative inline-block text-left z-100 group"
+        className="relative inline-block text-left z-100"
         data-cursor="hover"
         aria-label="Options Menu"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
       >
         <button
-          className={`p-2 h-10 border border-s/20 flex items-center justify-center 
-        transition-all cursor-pointer ${isOpen ? "bg-p text-s" : "bg-s text-p hover:bg-p hover:text-s"}`}
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`p-3 h-12.5 border border-s/20 transition-all ${
+            isOpen ? "bg-p text-s" : "bg-s text-p hover:bg-p hover:text-s"
+          }`}
         >
-          <MdMoreVert size={22} />
+          <div className="overflow-hidden h-[20px]">
+            <HoverText text={<MdMoreVert size={22} />} hover={hover} />
+          </div>
         </button>
 
         <AnimatePresence>
@@ -46,31 +110,68 @@ export function FilterDropdown({
               initial={{ opacity: 0, y: -8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2 "
+              transition={{
+                duration: 0.15,
+                ease: "easeOut",
+              }}
+              className="absolute right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2"
             >
-              <div className="px-3 py-2 border-b border-s/10 text-p text-[.8em] font-semibold uppercase flex items-center gap-1">
-                <MdSort size={16} /> SORT & FILTER
+              <div className="px-3 py-2 border-b border-s/10">
+                <div className="flex items-center justify-between">
+                  <RevealText
+                    text="SORT & FILTER"
+                    animate={true}
+                    className="text-[.9em] font-semibold uppercase"
+                  />
+
+                  <motion.div
+                    variants={wordReveal}
+                    initial="initial"
+                    animate="animate"
+                    className="shrink-0"
+                  >
+                    <MdSort size={16} />
+                  </motion.div>
+                </div>
               </div>
 
               <div className="py-1">
                 {sortOptions.map((opt) => {
                   const isSelected = sortBy === opt.value;
+                  const isHovered = hoveredOption === opt.value;
+
                   return (
                     <button
                       key={opt.value}
+                      type="button"
                       onClick={() => {
                         onSortChange(opt.value);
                         setIsOpen(false);
+                        setHoveredOption(null);
                       }}
-                      className={`w-full text-left px-3 py-2 text-p text-[.8em] font-semibold uppercase flex items-center justify-between 
-                        hover:bg-p/20 transition-colors ${
-                          isSelected ? "text-p font-bold" : "opacity-50"
-                        }`}
+                      onPointerEnter={() => setHoveredOption(opt.value)}
+                      onPointerLeave={() => setHoveredOption(null)}
+                      className={`w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between hover:bg-p/20 transition-colors ${
+                        isSelected ? "text-p font-bold" : "text-p opacity-50"
+                      }`}
                     >
-                      <ScrambleHover text={opt.label} />
+                      <RevealText
+                        text={opt.label}
+                        animate={true}
+                        hover={isHovered}
+                      />
 
-                      {isSelected && <MdCheck size={16} />}
+                      {isSelected && (
+                        <motion.span
+                          variants={wordReveal}
+                          initial="initial"
+                          animate="animate"
+                          custom={0.15}
+                          className="shrink-0 ml-3"
+                        >
+                          <MdCheck size={16} />
+                        </motion.span>
+                      )}
                     </button>
                   );
                 })}
@@ -79,13 +180,15 @@ export function FilterDropdown({
               {onToggleInStock && (
                 <div className="border-t border-p/25 pt-1 mt-1">
                   <button
+                    type="button"
                     onClick={() => {
                       onToggleInStock();
                       setIsOpen(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-[11px] font-semibold uppercase flex items-center justify-between hover:bg-s/10 transition-colors opacity-70"
+                    className="w-full px-3 py-2 text-[11px] font-semibold uppercase flex items-center justify-between hover:bg-s/10 transition-colors opacity-70"
                   >
                     <span>AVAILABLE ONLY</span>
+
                     {showOnlyInStock && <MdCheck size={14} />}
                   </button>
                 </div>

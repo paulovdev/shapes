@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "PP Supply Mono";
+  src: url("/fonts/PPSupplyMono-Regular.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "PP Supply Mono L";
+  src: url("/fonts/PPSupplyMono-Ultralight.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+}
+
 @theme {
   --color-p: #eeeeee;
   --color-s: #000000;
@@ -10,7 +24,8 @@
   --breakpoint-md: 768px;
   --breakpoint-sm: 400px;
 
-  --font-chivo: "chivo";
+  --font-pp: "PP Supply Mono", Arial, sans-serif;
+  --font-pp-l: "PP Supply Mono L", Arial, sans-serif;
   --font-instrument: "Instrument Sans";
 }
 
@@ -27,7 +42,7 @@ body {
   margin: 0;
   width: 100dvw;
   overflow-x: hidden;
-  font-family: "chivo", sans-serif !important;
+  font-family: "PP Supply Mono", Arial, sans-serif;
 }
 
 ::-webkit-scrollbar {

@@ -21,7 +21,7 @@ export function CloseButton({ onClick }) {
         aria-label="Close modal"
         className="group flex size-12.5 cursor-pointer items-center justify-center bg-ts backdrop-blur-2xl"
       >
-        <IoClose className="text-[24px] text-p transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:rotate-90" />
+        <IoClose className="text-[24px] text-p transition-all duration-750 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:rotate-90" />
       </motion.button>
     </motion.div>
   );

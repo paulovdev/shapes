@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+"use client";
+
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Lenis from "lenis";
 import { MdClose, MdCheck } from "react-icons/md";
 import {
   FaCartPlus,
@@ -14,8 +17,9 @@ import {
   itemAnim,
   overlayAnim,
 } from "@/app/anim/modal.anim";
-import Scramble from "../../common/scramble";
-import { RevealText } from "../../ui/reveal-text";
+
+import { Reveal } from "../../ui/reveal";
+import Button from "../../ui/button";
 
 const MINIMAP_IMAGES = [
   "/images/product-overview/product_minimap_01.jpg",
@@ -25,7 +29,27 @@ const MINIMAP_IMAGES = [
   "/images/product-overview/product_minimap_05.jpg",
 ];
 
-export function ProductModal({
+const clipPathDirectionalVariants = {
+  enter: (direction) => ({
+    clipPath: direction > 0 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)",
+  }),
+  center: {
+    clipPath: "inset(0% 0% 0% 0%)",
+    transition: {
+      duration: 0.75,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  },
+  exit: (direction) => ({
+    clipPath: direction > 0 ? "inset(0% 100% 0% 0%)" : "inset(0% 0% 0% 100%)",
+    transition: {
+      duration: 0.75,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  }),
+};
+
+export const ProductModal = memo(function ProductModal({
   project,
   onClose,
   onAddToCart,
@@ -34,32 +58,71 @@ export function ProductModal({
 }) {
   if (!project) return null;
 
-  const isPurchased = purchasedIds.includes(project.id);
-  const inCart = isInCart(project.id);
-  const [btnHover, setBtnHover] = useState(false);
+  const scrollContainerRef = useRef(null);
 
-  const [selectedImgIndex, setSelectedImgIndex] = useState(0);
-
+  const [[selectedImgIndex, direction], setPage] = useState([0, 0]);
   const [selectedSize, setSelectedSize] = useState(
     project.sizes ? project.sizes[0] : "M",
   );
 
-  const gallery = [
-    project.img || MINIMAP_IMAGES[0],
-    ...MINIMAP_IMAGES.slice(1),
-  ];
+  const isPurchased = purchasedIds.includes(project.id);
+  const inCart = isInCart(project.id);
+
+  const gallery = useMemo(() => {
+    return [project.img || MINIMAP_IMAGES[0], ...MINIMAP_IMAGES.slice(1)];
+  }, [project.img]);
+
+  useEffect(() => {
+    const wrapper = scrollContainerRef.current;
+    if (!wrapper) return;
+
+    const lenis = new Lenis({
+      wrapper: wrapper,
+      content: wrapper.firstElementChild,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+    });
+
+    let animationFrameId;
+
+    function raf(time) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+
+    animationFrameId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
+  }, []);
+
+  const changeImage = (newIndex) => {
+    if (newIndex === selectedImgIndex) return;
+    const newDirection = newIndex > selectedImgIndex ? 1 : -1;
+    setPage([newIndex, newDirection]);
+  };
 
   const handlePrevImage = () => {
-    setSelectedImgIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
+    const nextIndex =
+      selectedImgIndex === 0 ? gallery.length - 1 : selectedImgIndex - 1;
+    setPage([nextIndex, -1]);
   };
 
   const handleNextImage = () => {
-    setSelectedImgIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
+    const nextIndex =
+      selectedImgIndex === gallery.length - 1 ? 0 : selectedImgIndex + 1;
+    setPage([nextIndex, 1]);
   };
 
   return (
     <div className="fixed inset-0 z-200 flex justify-start">
-      {/* Background Overlay */}
       <motion.div
         variants={overlayAnim}
         initial="initial"
@@ -69,278 +132,212 @@ export function ProductModal({
         className="absolute inset-0 bg-s/25 backdrop-blur-md"
       />
 
-      {/* Drawer Container */}
       <motion.div
+        ref={scrollContainerRef}
         variants={drawerLeftAnim}
         initial="initial"
         animate="animate"
         exit="exit"
-        className="relative z-10 w-full max-w-180 h-screen bg-p text-s border-r border-s/15 p-5 flex flex-col justify-between overflow-y-auto custom-scrollbar font-chivo!"
+        className="relative z-10 w-full max-w-180 h-screen bg-p text-s border-r border-s/15 p-5 overflow-y-auto custom-scrollbar overscroll-contain"
       >
-        <div>
-          {/* Header Modal */}
-          <div className="flex items-center justify-between w-full border-b border-s/15 pb-4">
+        <div className="flex flex-col justify-between min-h-full">
+          <div>
+            <div className="relative flex items-center justify-between w-full border-b border-s/15 pb-4">
+              <motion.div
+                custom={1}
+                variants={itemAnim}
+                className="flex items-center gap-3"
+              >
+                <span className="text-p text-[.9em] font-semibold uppercase bg-s px-4 py-2 tracking-wider">
+                  [{project.category || "APPAREL"}]
+                </span>
+                <span className="text-s text-[.9em] font-semibold uppercase">
+                  {project.id ? `${project.id}` : "APP-2026-X"}
+                </span>
+              </motion.div>
+
+              <motion.button
+                variants={closeBtnAnim}
+                onClick={onClose}
+                className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
+                data-cursor="hover"
+              >
+                <MdClose className="text-[1.5em] text-p" />
+              </motion.button>
+            </div>
+
+            <div className="mt-8">
+              <Reveal
+                text="GARMENT & APPAREL ARCHIVE"
+                delay={0.25}
+                className="mb-5 text-s/50 text-[.9em] font-semibold uppercase"
+              />
+              <Reveal
+                text={project.title || "UNTITLED PIECE"}
+                delay={0.5}
+                className="text-[clamp(40px,8vw,82px)] font-pp-l font-semibold leading-[90%] tracking-[-6%] text-s"
+              />
+            </div>
+
+            {/* CONTAINER PRINCIPAL DA IMAGEM COM CLIP-PATH DIREIONAL */}
             <motion.div
-              custom={1}
+              custom={3}
               variants={itemAnim}
-              className="flex items-center gap-3"
+              className="w-full h-112 p-2 border border-s/15 flex items-center justify-center relative overflow-hidden group mt-6 bg-s/5"
             >
-              <span className="text-p text-[.8em] font-semibold uppercase bg-s px-4 py-2 tracking-wider">
-                [{project.category || "APPAREL"}]
-              </span>
-              <span className="text-s text-[.8em] font-semibold uppercase">
-                {project.id ? `${project.id}` : "APP-2026-X"}
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={selectedImgIndex}
+                  custom={direction}
+                  variants={clipPathDirectionalVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="absolute inset-0 size-full "
+                >
+                  <Image
+                    src={gallery[selectedImgIndex]}
+                    alt={project.title || "Product image"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 700px"
+                    priority
+                    className="object-contain size-full"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20">
+                <Button onClick={handlePrevImage} text="🡨" />
+              </div>
+
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20">
+                <Button onClick={handleNextImage} text="🡪" />
+              </div>
+
+              <span className="absolute bottom-3 right-3 bg-s text-p text-[.9em] font-semibold uppercase px-2.5 py-1 z-20">
+                {selectedImgIndex + 1} / {gallery.length}
               </span>
             </motion.div>
 
-            <motion.button
-              variants={closeBtnAnim}
-              onClick={onClose}
-              className="size-12.5 bg-s flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-              data-cursor="hover"
-            >
-              <MdClose className="text-[1.5em] text-p" />
-            </motion.button>
-          </div>
+            <div className="grid grid-cols-5 gap-2 my-2.5">
+              {gallery.map((imgSrc, idx) => {
+                const isSelected = selectedImgIndex === idx;
 
-          {/* Título e Subtítulo */}
-          <motion.div custom={2} variants={itemAnim} className="mt-8">
-            <RevealText
-              text="GARMENT & APPAREL ARCHIVE"
-              className="mb-5 text-s/50 text-[.8em] font-semibold uppercase"
-            />
-            <RevealText
-              text={project.title || "UNTITLED PIECE"}
-              className="text-[clamp(40px,8vw,72px)] font-instrument font-normal leading-[90%] tracking-[-6%] text-s"
-            />
-          </motion.div>
-
-          {/* Galeria de Imagens Principais (Slide) */}
-          <motion.div
-            custom={3}
-            variants={itemAnim}
-            className="w-full h-112 p-2 border border-s/15 flex items-center justify-center relative overflow-hidden group mt-6 bg-s/5"
-          >
-            <Image
-              src={gallery[selectedImgIndex]}
-              alt={project.title}
-              fill
-              className="object-contain size-full transition-all duration-300"
-            />
-
-            {/* Navegação do Slide */}
-            <button
-              onClick={handlePrevImage}
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-10 bg-p/80 hover:bg-s hover:text-p text-s flex items-center justify-center border border-s/15 transition-all"
-            >
-              <FaChevronLeft className="text-[1.5em]" />
-            </button>
-            <button
-              onClick={handleNextImage}
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-10 bg-p/80 hover:bg-s hover:text-p text-s flex items-center justify-center border border-s/15 transition-all"
-            >
-              <FaChevronRight className="text-xs" />
-            </button>
-
-            <span className="absolute bottom-3 right-3 bg-s text-p text-[.8em] font-semibold uppercase px-2.5 py-1">
-              {selectedImgIndex + 1} / {gallery.length}
-            </span>
-          </motion.div>
-
-          <div className="grid grid-cols-5 gap-2 my-2.5">
-            {gallery.map((imgSrc, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedImgIndex(idx)}
-                className={`relative h-20 border transition-all overflow-hidden ${
-                  selectedImgIndex === idx
-                    ? "border-s ring-1 ring-s opacity-100"
-                    : "border-s/20 opacity-40 hover:opacity-80"
-                }`}
-              >
-                <Image
-                  src={imgSrc}
-                  alt={`Minimap ${idx + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
-
-          <motion.div
-            custom={4}
-            variants={itemAnim}
-            className="w-full flex flex-col gap-2.5 my-2"
-          >
-            <div className="w-full flex items-center justify-between gap-2.5">
-              {/* Preço */}
-              <div className="w-full border border-s/15 p-5 py-8 flex flex-col items-center justify-center">
-                <span className="mb-5 text-s/50 text-[.8em] font-semibold uppercase block">
-                  PRICE
-                </span>
-                <p className="mb-5 text-[clamp(40px,8vw,56px)] text-center font-instrument font-normal leading-[90%] tracking-[-6%] text-s">
-                  {project.price || "R$ 389,00"}
-                </p>
-                <span className="mb-5 text-s/50 text-[.8em] font-semibold uppercase">
-                  BRL / TAX INCL.
-                </span>
-              </div>
-
-              {/* Coleção / Ano */}
-              <div className="w-full border border-s/15 p-5 py-8 flex flex-col items-center justify-center">
-                <span className="mb-5 text-s/50 text-[.8em] font-semibold uppercase block">
-                  COLLECTION
-                </span>
-                <p className="mb-5 text-[clamp(40px,8vw,56px)] text-center font-instrument font-normal leading-[90%] tracking-[-6%] text-s">
-                  {project.year || "2026"}
-                </p>
-                <span className="mb-5 text-s/50 text-[.8em] font-semibold uppercase">
-                  SEASON DROP
-                </span>
-              </div>
-            </div>
-
-            {/* Seleção de Tamanhos */}
-            <div className="border border-s/15 p-5 flex flex-col items-center justify-center">
-              <span className="mb-5 text-s/50 text-[.8em] font-semibold uppercase block">
-                AVAILABLE SIZES
-              </span>
-              <div className="flex flex-wrap justify-center gap-2">
-                {(project.sizes || ["P", "M", "G", "GG"]).map((sz) => (
+                return (
                   <button
-                    key={sz}
-                    onClick={() => setSelectedSize(sz)}
-                    className={`p-2 w-12.5 h-12.5 text-xs font-bold uppercase border transition-all ${
-                      selectedSize === sz
-                        ? "bg-s text-p border-s"
-                        : "bg-transparent text-s border-s/20 hover:border-s"
+                    key={idx}
+                    onClick={() => changeImage(idx)}
+                    className={`relative h-20 border transition-all overflow-hidden ${
+                      isSelected
+                        ? "border-s ring-1 ring-s opacity-100"
+                        : "border-s/20 opacity-40 hover:opacity-80"
                     }`}
                   >
-                    {sz}
+                    <Image
+                      src={imgSrc}
+                      alt={`Minimap ${idx + 1}`}
+                      fill
+                      sizes="120px"
+                      className="object-cover"
+                    />
+
+                    {/* Overlay de Seleção com ClipPath Direcional baseado no clique */}
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        clipPath: isSelected
+                          ? "inset(0% 0% 0% 0%)"
+                          : direction >= 0
+                            ? "inset(0% 100% 0% 0%)"
+                            : "inset(0% 0% 0% 100%)",
+                      }}
+                      transition={{ duration: 0.75, ease: [0.76, 0, 0.24, 1] }}
+                      className="absolute inset-0 bg-s/30 pointer-events-none"
+                    />
                   </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/*  */}
-          <motion.div custom={5} variants={itemAnim} className="space-y-2 mt-4">
-            <h3 className="text-[.8em] font-semibold text-s/50 uppercase">
-              // PRODUCT OVERVIEW & FABRIC SPECIFICATION
-            </h3>
-            <p className="text-[.8em] font-semibold text-s/50 uppercase leading-relaxed">
-              {project.desc ||
-                "Modelagem oversized contemporânea com costuras reforçadas, acabamento estruturado e caimento pesado de inspiração streetwear urbana."}
-            </p>
-
-            <div className="border border-s/15 divide-y divide-s/15 text-[.8em] my-4">
-              <div className="flex justify-between p-2.5 bg-s/5">
-                <span className="font-semibold text-s/50 uppercase">
-                  COMPOSIÇÃO / MATERIAL
-                </span>
-                <span className="font-semibold text-s/50 uppercase">
-                  {project.material || "100% ALGODÃO HEAVYWEIGHT"}
-                </span>
-              </div>
-              <div className="flex justify-between p-2.5">
-                <span className="font-semibold text-s/50 uppercase">
-                  MODELAGEM / FIT
-                </span>
-                <span className="font-semibold text-s/50 uppercase">
-                  OVERSIZED / BOX-FIT
-                </span>
-              </div>
-              <div className="flex justify-between p-2.5 bg-s/5">
-                <span className="font-semibold text-s/50 uppercase">
-                  ORIGEM / FABRICAÇÃO
-                </span>
-                <span className="font-semibold text-s/50 uppercase">
-                  NACIONAL / EDICÃO LIMITADA
-                </span>
-              </div>
-              <div className="flex justify-between p-2.5">
-                <span className="font-semibold text-s/50 uppercase">
-                  CUIDADOS DE CONSERVAÇÃO
-                </span>
-                <span className="font-semibold text-s/50 uppercase">
-                  LAVAR À MÃO / SECAR À SOMBRA
-                </span>
-              </div>
+                );
+              })}
             </div>
 
-            {/* Tags do Produto */}
-            <div className="flex flex-wrap gap-1.5 pt-2">
-              {(
-                project.stack || ["STREETWEAR", "OVERSIZED", "HEAVY COTTON"]
-              ).map((st, i) => (
-                <span
-                  key={i}
-                  className="text-[.8em] font-bold uppercase bg-s/10 border border-s/15 px-2 py-1"
-                >
-                  #{st}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-          {/*  */}
-        </div>
-
-        <motion.div
-          custom={6}
-          variants={itemAnim}
-          className="pt-8 mt-6 border-t border-s/15"
-        >
-          {isPurchased ? (
-            <a
-              href={project.downloadUrl || "#"}
-              download
-              onPointerEnter={() => setBtnHover(true)}
-              onPointerLeave={() => setBtnHover(false)}
-              className="w-full py-4 bg-s text-p font-bold uppercase flex items-center justify-center gap-2 hover:bg-s/90 transition-all text-sm tracking-wider"
-              data-cursor="hover"
+            <motion.div
+              custom={4}
+              variants={itemAnim}
+              className="w-full flex flex-col gap-2.5 my-2"
             >
-              <FaFolderOpen className="text-base" />
-              <Scramble text="BAIXAR NOTA & COMPROVANTE" trigger={btnHover} />
-            </a>
-          ) : (
-            <button
-              onClick={() => onAddToCart({ ...project, selectedSize })}
-              disabled={inCart}
-              onPointerEnter={() => setBtnHover(true)}
-              onPointerLeave={() => setBtnHover(false)}
-              className={`w-full py-4 font-bold uppercase flex items-center justify-center gap-2 transition-all text-sm tracking-wider cursor-pointer ${
-                inCart
-                  ? "bg-s/40 text-p cursor-not-allowed"
-                  : "bg-s text-p hover:bg-s/90"
-              }`}
-              data-cursor="hover"
-            >
-              {inCart ? (
-                <>
-                  <MdCheck className="text-lg" />
-                  <Scramble text="NO CARRINHO" trigger={btnHover} />
-                </>
-              ) : (
-                <>
-                  <FaCartPlus className="text-base" />
-                  <Scramble
-                    text={`ADICIONAR (${selectedSize}) — ${
-                      project.price || "R$ 389,00"
-                    }`}
-                    trigger={btnHover}
+              <div className="w-full flex items-center justify-between gap-2.5">
+                <div className="w-full border border-s/15 p-5 py-8 flex flex-col items-center justify-center">
+                  <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase block">
+                    PRICE
+                  </span>
+                  <p className="mb-5 text-[clamp(40px,8vw,82px)] font-pp-l text-center font-semibold leading-[90%] tracking-[-6%] text-s">
+                    {project.price || "R$ 389,00"}
+                  </p>
+                  <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase">
+                    USD / TAX INCL.
+                  </span>
+                </div>
+
+                <div className="w-full border border-s/15 p-5 py-8 flex flex-col items-center justify-center">
+                  <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase block">
+                    COLLECTION
+                  </span>
+                  <p className="mb-5 text-[clamp(40px,8vw,82px)] font-pp-l text-center font-semibold leading-[90%] tracking-[-6%] text-s">
+                    {project.year || "2026"}
+                  </p>
+                  <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase">
+                    SEASON DROP
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5 flex flex-col items-center justify-center">
+                <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase block">
+                  AVAILABLE SIZES
+                </span>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {(project.sizes || ["P", "M", "G", "GG"]).map((sz) => (
+                    <Button
+                      key={sz}
+                      onClick={() => setSelectedSize(sz)}
+                      text={sz}
+                      active={selectedSize === sz}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <motion.div custom={6} variants={itemAnim} className="mt-2">
+                {isPurchased ? (
+                  <Button
+                    href={project.downloadUrl || "#"}
+                    download
+                    icon={FaFolderOpen}
+                    text="DOWNLOAD RECEIPT & PROOF"
+                    className="w-full font-bold uppercase text-sm tracking-wider"
                   />
-                </>
-              )}
-            </button>
-          )}
+                ) : (
+                  <Button
+                    onClick={() => onAddToCart({ ...project, selectedSize })}
+                    disabled={inCart}
+                    icon={inCart ? MdCheck : FaCartPlus}
+                    text={
+                      inCart
+                        ? "ON THE CART"
+                        : `ADD (${selectedSize}) — $${project.price || "38"}`
+                    }
+                    className="w-full font-semibold uppercase text-[.9em] tracking-wider"
+                  />
+                )}
 
-          <div className="flex justify-between items-center text-[.8em] opacity-40 mt-4">
-            <span>XX.MOTTO // GARMENT ARCHIVE</span>
-            <span>TRANSAÇÃO CRIPTOGRAFADA</span>
+                <div className="flex justify-between items-center text-s text-[.9em] mt-10">
+                  <span>SHAPES // GARMENT ARCHIVE</span>
+                  <span>ENCRYPTED TRANSACTION</span>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );
-}
+});

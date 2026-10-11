@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { useInView } from "framer-motion";
-import { ClipText } from "./clip-text";
+
+import { Reveal } from "./reveal";
 
 export function RevealText({ text, tag = "p", className }) {
   const ref = useRef(null);
@@ -10,7 +11,7 @@ export function RevealText({ text, tag = "p", className }) {
 
   return (
     <div ref={ref}>
-      <ClipText
+      <Reveal
         text={text}
         animate={isInView ? "animate" : "initial"}
         exit="exit"

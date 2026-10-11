@@ -67,7 +67,7 @@ export const closeBtnAnim = {
     scale: 1,
     rotate: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
@@ -75,7 +75,7 @@ export const closeBtnAnim = {
     scale: 0,
     rotate: 90,
     transition: {
-      duration: 0.4,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
@@ -96,31 +96,57 @@ export const itemAnim = {
     y: 20,
     opacity: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
 };
 
 export const wordReveal = {
-  initial: {
+  initial: (custom) => ({
     y: "100%",
-    opacity: 0,
-  },
+
+    transition: {
+      duration: 0.75,
+      ease: [0.33, 1, 0.68, 1],
+      delay: custom,
+    },
+  }),
   animate: (custom) => ({
     y: "0%",
-    opacity: 1,
+
     transition: {
-      duration: 1,
+      duration: 0.75,
       ease: [0.33, 1, 0.68, 1],
       delay: custom,
     },
   }),
   exit: (custom) => ({
     y: "100%",
-    opacity: 0,
+
     transition: {
-      duration: 1,
+      duration: 0.75,
+      ease: [0.33, 1, 0.68, 1],
+      delay: custom,
+    },
+  }),
+};
+
+export const wordRevealHover = {
+  initial: (custom) => ({
+    y: "0%",
+
+    transition: {
+      duration: 0.75,
+      ease: [0.33, 1, 0.68, 1],
+      delay: custom,
+    },
+  }),
+  animate: (custom) => ({
+    y: "-50%",
+
+    transition: {
+      duration: 0.75,
       ease: [0.33, 1, 0.68, 1],
       delay: custom,
     },
@@ -130,21 +156,20 @@ export const wordReveal = {
 export const drawerLeftAnim = {
   initial: {
     clipPath: "inset(0% 100% 0% 0%)",
-    x: "-20%",
   },
   animate: {
     clipPath: "inset(0% 0% 0% 0%)",
-    x: "0%",
+
     transition: {
-      duration: 0.8,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
   exit: {
     clipPath: "inset(0% 100% 0% 0%)",
-    x: "-20%",
+
     transition: {
-      duration: 0.6,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
@@ -153,21 +178,20 @@ export const drawerLeftAnim = {
 export const drawerRightAnim = {
   initial: {
     clipPath: "inset(0% 0% 0% 100%)",
-    x: "20%",
   },
   animate: {
     clipPath: "inset(0% 0% 0% 0%)",
-    x: "0%",
+
     transition: {
-      duration: 0.8,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },
   exit: {
     clipPath: "inset(0% 0% 0% 100%)",
-    x: "20%",
+
     transition: {
-      duration: 0.6,
+      duration: 0.75,
       ease: [0.76, 0, 0.24, 1],
     },
   },

@@ -6,7 +6,16 @@ import { MdClose, MdShoppingBag } from "react-icons/md";
 
 import { useCartStore } from "@/app/stores/zustand";
 import DitherImage from "../dither/dither-image/dither-image";
-import { BsTrash } from "react-icons/bs";
+
+import {
+  closeBtnAnim,
+  drawerRightAnim,
+  itemAnim,
+  overlayAnim,
+} from "@/app/anim/modal.anim";
+import { FaTrash } from "react-icons/fa6";
+import Button from "./button";
+import Image from "next/image";
 
 export function CartDrawer() {
   const { cart, isCartOpen, closeCart, removeFromCart, checkout, getTotal } =
@@ -19,38 +28,48 @@ export function CartDrawer() {
       {isCartOpen && (
         <div className="fixed inset-0 z-250 flex justify-end">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={overlayAnim}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             onClick={closeCart}
-            className="absolute inset-0 bg-p/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-s/25 backdrop-blur-md"
           />
 
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            variants={drawerRightAnim}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="relative z-10 w-full max-w-md h-screen bg-p border-l border-s/15 p-6 flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between border-b border-s/15 pb-4">
-                <span className="text-[.8em] font-semibold text-s flex items-center gap-2 text-sm">
-                  <MdShoppingBag /> [ CART BAG ({cart.length}) ]
-                </span>
-                <button
+              <div className="relative flex items-center justify-between w-full border-b border-s/15 pb-4">
+                <motion.div
+                  custom={1}
+                  variants={itemAnim}
+                  className="flex items-center gap-3 bg-s px-4 py-2 "
+                >
+                  <MdShoppingBag className="relative -top-0.5 text-[1em] text-p" />
+                  <span className="text-[.9em] font-semibold text-p">
+                    CART BAG ({cart.length})
+                  </span>
+                </motion.div>
+
+                <motion.button
+                  variants={closeBtnAnim}
                   onClick={closeCart}
-                  className="p-2 bg-s text-p rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                  className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                   data-cursor="hover"
                 >
-                  <MdClose />
-                </button>
+                  <MdClose className="text-[1.5em] text-p" />
+                </motion.button>
               </div>
 
               <div className="mt-6 space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                 {cart.length === 0 ? (
                   <div className="py-16 text-center">
-                    <p className="text-[.8em] font-semibold text-s">
+                    <p className="text-[.9em] font-semibold text-s">
                       NO ITEMS IN YOUR ARCHIVE BAG
                     </p>
                   </div>
@@ -62,13 +81,19 @@ export function CartDrawer() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 border border-s/15 flex items-center justify-center p-1 bg-p">
-                          <DitherImage src={item.img} alt={item.title} />
+                          <Image
+                            src={item.img}
+                            alt={item.title}
+                            width={231}
+                            height={233}
+                            className="object-contain size-full"
+                          />
                         </div>
                         <div>
-                          <h4 className="text-[.8em] font-semibold text-s">
+                          <h4 className="text-[.9em] font-semibold text-s">
                             {item.title}
                           </h4>
-                          <span className="text-[.8em] font-semibold text-s">
+                          <span className="text-[.9em] font-semibold text-s">
                             ${item.price || "24.00"} USD
                           </span>
                         </div>
@@ -77,7 +102,7 @@ export function CartDrawer() {
                         onClick={() => removeFromCart(item.id)}
                         className="p-2 text-red-400 hover:text-red-500 text-[1em] cursor-pointer"
                       >
-                        <BsTrash />
+                        <FaTrash />
                       </button>
                     </div>
                   ))
@@ -87,21 +112,17 @@ export function CartDrawer() {
 
             <div className="border-t border-s/15 pt-4 space-y-4">
               <div className="flex justify-between items-baseline">
-                <span className="text-[.8em] uppercase opacity-60">
-                  SUBTOTAL
-                </span>
-                <span className="text-2xl font-black">
+                <span className="text-[.9em] uppercase">SUBTOTAL</span>
+                <span className="text-[.9em] font-black">
                   ${total.toFixed(2)} USD
                 </span>
               </div>
-
-              <button
+              <Button
                 onClick={checkout}
                 disabled={cart.length === 0}
-                className="w-full py-4 bg-s text-p font-bold text-[.8em] uppercase tracking-widest hover:bg-s/90 disabled:opacity-40 transition-all cursor-pointer"
-              >
-                PROCEED TO CHECKOUT
-              </button>
+                className="w-full font-semibold uppercase text-[.9em] tracking-wider"
+                text="PROCEED TO CHECKOUT"
+              />
             </div>
           </motion.div>
         </div>
