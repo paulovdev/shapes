@@ -65,7 +65,10 @@ export function FavoritesDrawer({ onAddToCart }) {
 
                 <motion.button
                   variants={closeBtnAnim}
-                  onClick={closeFavorites}
+                  onClick={() => {
+                    closeFavorites();
+                    setCloses(false);
+                  }}
                   className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                   data-cursor="hover"
                 >
@@ -132,7 +135,10 @@ export function FavoritesDrawer({ onAddToCart }) {
 
             <div className="border-t border-s/15 pt-4">
               <Button
-                onClick={closeFavorites}
+                onClick={() => {
+                  closeFavorites();
+                  setCloses(false);
+                }}
                 className="w-full font-semibold uppercase text-[.9em] tracking-wider"
                 text="CLOSE FAVORITES"
               />

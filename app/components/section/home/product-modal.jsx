@@ -4,13 +4,8 @@ import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Lenis from "lenis";
-import { MdClose, MdCheck } from "react-icons/md";
-import {
-  FaCartPlus,
-  FaFolderOpen,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+import { MdClose } from "react-icons/md";
+
 import {
   closeBtnAnim,
   drawerLeftAnim,
@@ -60,7 +55,7 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
     openCart,
     purchasedIds,
   } = useCartStore();
-  
+
   const scrollContainerRef = useRef(null);
   const { setCloses } = useClose();
   const [[selectedImgIndex, direction], setPage] = useState([0, 0]);
@@ -167,7 +162,10 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
 
               <motion.button
                 variants={closeBtnAnim}
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  setCloses(false);
+                }}
                 className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                 data-cursor="hover"
               >

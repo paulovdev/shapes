@@ -63,7 +63,10 @@ export function CartDrawer() {
 
                 <motion.button
                   variants={closeBtnAnim}
-                  onClick={closeCart}
+                  onClick={() => {
+                    closeCart();
+                    setCloses(false);
+                  }}
                   className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                   data-cursor="hover"
                 >

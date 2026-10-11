@@ -72,6 +72,7 @@ export const ProductCard = memo(function ProductCard({
   offsetY = 0,
   isModalOpen = false,
   onContextMenu,
+  contextMenu,
 }) {
   const [hover, setHover] = useState(false);
 
