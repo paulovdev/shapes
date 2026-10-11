@@ -198,6 +198,9 @@ export function FilterDropdown({
                 }}
                 onMouseEnter={() => setCloses(true)}
                 onMouseLeave={() => setCloses(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-s/5 z-40"
               />
             </>

@@ -163,6 +163,9 @@ export function ProductContextMenu({ product, position, onClose }) {
         }}
         onMouseEnter={() => setCloses(true)}
         onMouseLeave={() => setCloses(false)}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="absolute inset-0 bg-s/5"
       />
     </>
