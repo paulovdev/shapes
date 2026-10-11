@@ -10,8 +10,8 @@ const HomePage = () => {
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden">
-  {/*     <Loader loading={loading} setLoading={setLoading} />
- */}
+      <Loader loading={loading} setLoading={setLoading} />
+
       <Nav />
       <main className="w-full h-screen overflow-hidden z-10">
         <Hero loading={loading} />
