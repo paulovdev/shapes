@@ -8,6 +8,12 @@ export const useDragging = create((set) => ({
     set((state) => (state.dragginS === value ? state : { dragginS: value })),
 }));
 
+export const useClose = create((set) => ({
+  closes: false,
+  setCloses: (value) =>
+    set((state) => (state.closes === value ? state : { closes: value })),
+}));
+
 export const useCartStore = create()(
   persist(
     (set, get) => ({

@@ -6,7 +6,7 @@ import { MdClose, MdFavorite, MdShoppingBag } from "react-icons/md";
 import { FaTrash } from "react-icons/fa6";
 import Image from "next/image";
 
-import { useCartStore } from "@/app/stores/zustand";
+import { useCartStore, useClose } from "@/app/stores/zustand";
 import { products } from "@/app/data/projects.data";
 import Button from "./button";
 
@@ -20,7 +20,7 @@ import {
 export function FavoritesDrawer({ onAddToCart }) {
   const { favoriteIds, removeFromFavorites, isFavoritesOpen, closeFavorites } =
     useCartStore();
-
+  const { setCloses } = useClose();
   const favoriteProducts = products.filter((product) =>
     favoriteIds.includes(product.id),
   );
@@ -34,7 +34,12 @@ export function FavoritesDrawer({ onAddToCart }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            onClick={closeFavorites}
+            onClick={() => {
+              closeFavorites();
+              setCloses(false);
+            }}
+            onMouseEnter={() => setCloses(true)}
+            onMouseLeave={() => setCloses(false)}
             className="absolute inset-0 bg-s/25 backdrop-blur-md"
           />
 

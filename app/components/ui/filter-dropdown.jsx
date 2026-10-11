@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdMoreVert, MdSort, MdCheck } from "react-icons/md";
 import { wordRevealHover } from "@/app/anim/modal.anim";
 import { wordReveal } from "./reveal-text-hover";
+import { useClose } from "@/app/stores/zustand";
 
 const HoverText = ({ text, hover }) => {
   return (
@@ -69,7 +70,7 @@ export function FilterDropdown({
   const [hover, setHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredOption, setHoveredOption] = useState(null);
-
+  const { setCloses } = useClose();
   const sortOptions = [
     { label: "DEFAULT", value: "DEFAULT" },
     { label: "PRICE: LOW TO HIGH", value: "PRICE_ASC" },
@@ -79,12 +80,6 @@ export function FilterDropdown({
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50"
-        onClick={() => setIsOpen(false)}
-        style={{ display: isOpen ? "block" : "none" }}
-      />
-
       <div
         className="relative inline-block text-left z-100"
         data-cursor="hover"
@@ -106,95 +101,106 @@ export function FilterDropdown({
 
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{
-                duration: 0.15,
-                ease: "easeOut",
-              }}
-              className="absolute right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2"
-            >
-              <div className="px-3 py-2 border-b border-s/10">
-                <div className="flex items-center justify-between">
-                  <RevealText
-                    text="SORT & FILTER"
-                    animate={true}
-                    className="text-[.9em] font-semibold uppercase"
-                  />
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{
+                  duration: 0.15,
+                  ease: "easeOut",
+                }}
+                className="absolute right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2 z-50"
+              >
+                <div className="px-3 py-2 border-b border-s/10">
+                  <div className="flex items-center justify-between">
+                    <RevealText
+                      text="SORT & FILTER"
+                      animate={true}
+                      className="text-[.9em] font-semibold uppercase"
+                    />
 
-                  <motion.div
-                    variants={wordReveal}
-                    initial="initial"
-                    animate="animate"
-                    className="shrink-0"
-                  >
-                    <MdSort size={16} />
-                  </motion.div>
+                    <motion.div
+                      variants={wordReveal}
+                      initial="initial"
+                      animate="animate"
+                      className="shrink-0"
+                    >
+                      <MdSort size={16} />
+                    </motion.div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="py-1">
-                {sortOptions.map((opt) => {
-                  const isSelected = sortBy === opt.value;
-                  const isHovered = hoveredOption === opt.value;
+                <div className="py-1">
+                  {sortOptions.map((opt) => {
+                    const isSelected = sortBy === opt.value;
+                    const isHovered = hoveredOption === opt.value;
 
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => {
-                        onSortChange(opt.value);
-                        setIsOpen(false);
-                        setHoveredOption(null);
-                      }}
-                      onPointerEnter={() => setHoveredOption(opt.value)}
-                      onPointerLeave={() => setHoveredOption(null)}
-                      className={`w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between 
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          onSortChange(opt.value);
+                          setIsOpen(false);
+                          setHoveredOption(null);
+                        }}
+                        onPointerEnter={() => setHoveredOption(opt.value)}
+                        onPointerLeave={() => setHoveredOption(null)}
+                        className={`w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between 
                         hover:bg-p/20 transition-colors ${
                           isSelected ? "text-p font-bold" : "text-p/50"
                         }`}
-                    >
-                      <RevealText
-                        text={opt.label}
-                        animate={true}
-                        hover={isHovered}
-                      />
+                      >
+                        <RevealText
+                          text={opt.label}
+                          animate={true}
+                          hover={isHovered}
+                        />
 
-                      {isSelected && (
-                        <motion.span
-                          variants={wordReveal}
-                          initial="initial"
-                          animate="animate"
-                          custom={0.15}
-                          className="shrink-0 ml-3"
-                        >
-                          <MdCheck size={16} />
-                        </motion.span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {onToggleInStock && (
-                <div className="border-t border-p/25 pt-1 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onToggleInStock();
-                      setIsOpen(false);
-                    }}
-                    className="w-full px-3 py-2 text-[11px] font-semibold uppercase flex items-center justify-between hover:bg-s/10 transition-colors opacity-70"
-                  >
-                    <span>AVAILABLE ONLY</span>
-
-                    {showOnlyInStock && <MdCheck size={14} />}
-                  </button>
+                        {isSelected && (
+                          <motion.span
+                            variants={wordReveal}
+                            initial="initial"
+                            animate="animate"
+                            custom={0.15}
+                            className="shrink-0 ml-3"
+                          >
+                            <MdCheck size={16} />
+                          </motion.span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-            </motion.div>
+
+                {onToggleInStock && (
+                  <div className="border-t border-p/25 pt-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onToggleInStock();
+                        setIsOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-[11px] font-semibold uppercase flex items-center justify-between hover:bg-s/10 transition-colors opacity-70"
+                    >
+                      <span>AVAILABLE ONLY</span>
+
+                      {showOnlyInStock && <MdCheck size={14} />}
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+              <motion.div
+                onClick={() => {
+                  setIsOpen(false);
+                  setCloses(false);
+                }}
+                onMouseEnter={() => setCloses(true)}
+                onMouseLeave={() => setCloses(false)}
+                className="fixed inset-0 bg-s/5 z-40"
+              />
+            </>
           )}
         </AnimatePresence>
       </div>

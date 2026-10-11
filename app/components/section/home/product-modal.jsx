@@ -20,7 +20,7 @@ import {
 
 import { Reveal } from "../../ui/reveal";
 import Button from "../../ui/button";
-import { useCartStore } from "@/app/stores/zustand";
+import { useCartStore, useClose } from "@/app/stores/zustand";
 
 const MINIMAP_IMAGES = [
   "/images/product-overview/product_minimap_01.jpg",
@@ -58,11 +58,11 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
     isFavorite,
     isInCart,
     openCart,
-    openFavorites,
     purchasedIds,
   } = useCartStore();
+  
   const scrollContainerRef = useRef(null);
-
+  const { setCloses } = useClose();
   const [[selectedImgIndex, direction], setPage] = useState([0, 0]);
   const [selectedSize, setSelectedSize] = useState(
     product.sizes ? product.sizes[0] : "M",
@@ -132,7 +132,12 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
         initial="initial"
         animate="animate"
         exit="exit"
-        onClick={onClose}
+        onClick={() => {
+          onClose();
+          setCloses(false);
+        }}
+        onMouseEnter={() => setCloses(true)}
+        onMouseLeave={() => setCloses(false)}
         className="absolute inset-0 bg-s/25 backdrop-blur-md"
       />
 

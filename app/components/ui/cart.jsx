@@ -4,7 +4,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdClose, MdShoppingBag } from "react-icons/md";
 
-import { useCartStore } from "@/app/stores/zustand";
+import { useCartStore, useClose } from "@/app/stores/zustand";
 import DitherImage from "../dither/dither-image/dither-image";
 
 import {
@@ -20,7 +20,7 @@ import Image from "next/image";
 export function CartDrawer() {
   const { cart, isCartOpen, closeCart, removeFromCart, checkout, getTotal } =
     useCartStore();
-
+  const { setCloses } = useClose();
   const total = getTotal ? getTotal() : 0;
 
   return (
@@ -32,7 +32,12 @@ export function CartDrawer() {
             initial="initial"
             animate="animate"
             exit="exit"
-            onClick={closeCart}
+            onClick={() => {
+              closeCart();
+              setCloses(false);
+            }}
+            onMouseEnter={() => setCloses(true)}
+            onMouseLeave={() => setCloses(false)}
             className="absolute inset-0 bg-s/25 backdrop-blur-md"
           />
 

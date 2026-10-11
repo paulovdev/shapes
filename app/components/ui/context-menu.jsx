@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { MdFavorite, MdFavoriteBorder, MdShoppingBag } from "react-icons/md";
 import { wordRevealHover } from "@/app/anim/modal.anim";
 import { wordReveal } from "./reveal-text-hover";
-import { useCartStore } from "@/app/stores/zustand";
+import { useCartStore, useClose } from "@/app/stores/zustand";
 
 const RevealText = ({
   text = "",
@@ -57,7 +57,7 @@ export function ProductContextMenu({ product, position, onClose }) {
     openCart,
     openFavorites,
   } = useCartStore();
-
+  const { setCloses } = useClose();
   useEffect(() => {
     const handleClick = () => onClose();
     const handleKeyDown = (e) => {
@@ -77,81 +77,94 @@ export function ProductContextMenu({ product, position, onClose }) {
   const inCart = isInCart(product?.id);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: -4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -4 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-      style={{ top: position.y, left: position.x }}
-      className="fixed z-9999 w-56 bg-s text-p border border-s/20 p-2 shadow-2xl select-none"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="py-1">
-        <button
-          type="button"
-          onClick={() => {
-            addToFavorite(product);
-            if (!favorite) {
-              openFavorites();
-            }
-            onClose();
-          }}
-          onPointerEnter={() => setHoveredOption("favorite")}
-          onPointerLeave={() => setHoveredOption(null)}
-          className="w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between 
+    <>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+        style={{ top: position.y, left: position.x }}
+        className="fixed z-9999 w-56 bg-s text-p border border-s/20 p-2 shadow-2xl select-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="py-1">
+          <button
+            type="button"
+            onClick={() => {
+              addToFavorite(product);
+              if (!favorite) {
+                openFavorites();
+              }
+              onClose();
+            }}
+            onPointerEnter={() => setHoveredOption("favorite")}
+            onPointerLeave={() => setHoveredOption(null)}
+            className="w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between 
             hover:bg-p/20 transition-colors text-p"
-        >
-          <RevealText
-            text={favorite ? "FAVORITED" : "FAVORITE"}
-            animate={true}
-            hover={hoveredOption === "favorite"}
-          />
-          <motion.span
-            variants={wordReveal}
-            initial="initial"
-            animate="animate"
-            className="shrink-0 ml-3"
+            data-cursor="hover"
           >
-            {favorite ? (
-              <MdFavorite size={16} className="text-red-500" />
-            ) : (
-              <MdFavoriteBorder size={16} />
-            )}
-          </motion.span>
-        </button>
+            <RevealText
+              text={favorite ? "FAVORITED" : "FAVORITE"}
+              animate={true}
+              hover={hoveredOption === "favorite"}
+            />
+            <motion.span
+              variants={wordReveal}
+              initial="initial"
+              animate="animate"
+              className="shrink-0 ml-3"
+            >
+              {favorite ? (
+                <MdFavorite size={16} className="text-red-500" />
+              ) : (
+                <MdFavoriteBorder size={16} />
+              )}
+            </motion.span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            if (inCart) {
-              addToCart(product);
-            } else {
-              addToCart(product);
-              openCart();
-            }
+          <button
+            type="button"
+            onClick={() => {
+              if (inCart) {
+                addToCart(product);
+              } else {
+                addToCart(product);
+                openCart();
+              }
 
-            onClose();
-          }}
-          onPointerEnter={() => setHoveredOption("bag")}
-          onPointerLeave={() => setHoveredOption(null)}
-          className="w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between hover:bg-p/20 transition-colors text-p"
-        >
-          <RevealText
-            text={inCart ? "REMOVE FROM BAG" : "ADD TO BAG"}
-            animate={true}
-            hover={hoveredOption === "bag"}
-          />
-
-          <motion.span
-            variants={wordReveal}
-            initial="initial"
-            animate="animate"
-            className="shrink-0 ml-3"
+              onClose();
+            }}
+            data-cursor="hover"
+            onPointerEnter={() => setHoveredOption("bag")}
+            onPointerLeave={() => setHoveredOption(null)}
+            className="w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between hover:bg-p/20 transition-colors text-p"
           >
-            <MdShoppingBag size={16} />
-          </motion.span>
-        </button>
-      </div>
-    </motion.div>
+            <RevealText
+              text={inCart ? "REMOVE FROM BAG" : "ADD TO BAG"}
+              animate={true}
+              hover={hoveredOption === "bag"}
+            />
+
+            <motion.span
+              variants={wordReveal}
+              initial="initial"
+              animate="animate"
+              className="shrink-0 ml-3"
+            >
+              <MdShoppingBag size={16} />
+            </motion.span>
+          </button>
+        </div>
+      </motion.div>
+      <motion.div
+        onClick={() => {
+          onClose();
+          setCloses(false);
+        }}
+        onMouseEnter={() => setCloses(true)}
+        onMouseLeave={() => setCloses(false)}
+        className="absolute inset-0 bg-s/5"
+      />
+    </>
   );
 }
