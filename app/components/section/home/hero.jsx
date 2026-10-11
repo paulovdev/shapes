@@ -15,7 +15,7 @@ import {
 } from "framer-motion";
 
 import { products } from "@/app/data/projects.data";
-import { useDragging, useCartStore } from "@/app/stores/zustand";
+import { useDragging, useCartStore, useClose } from "@/app/stores/zustand";
 
 import { ProductModal } from "./product-modal";
 import { ProductCard } from "./product-card";
@@ -58,16 +58,10 @@ export default function GalleryHero({ loading }) {
   const [sortBy, setSortBy] = useState("DEFAULT");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+
   const [contextMenu, setContextMenu] = useState({ product: null, x: 0, y: 0 });
 
-  const {
-    purchasedIds,
-    addToCart,
-    isInCart,
-    openCart,
-    isCartOpen,
-    isFavoritesOpen,
-  } = useCartStore();
+  const { isCartOpen, isFavoritesOpen } = useCartStore();
 
   const [vw, setVw] = useState(1920);
   const [vh, setVh] = useState(1080);
@@ -130,6 +124,7 @@ export default function GalleryHero({ loading }) {
   const handleContextMenu = (e, itemData) => {
     e.preventDefault();
     e.stopPropagation();
+
     setContextMenu({
       product: itemData,
       x: e.clientX,
@@ -394,7 +389,9 @@ export default function GalleryHero({ loading }) {
         <ProductContextMenu
           product={contextMenu.product}
           position={{ x: contextMenu.x, y: contextMenu.y }}
-          onClose={() => setContextMenu({ product: null, x: 0, y: 0 })}
+          onClose={() => {
+            setContextMenu({ product: null, x: 0, y: 0 });
+          }}
         />
       </AnimatePresence>
 

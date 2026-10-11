@@ -92,9 +92,7 @@ export function ProductContextMenu({ product, position, onClose }) {
             type="button"
             onClick={() => {
               addToFavorite(product);
-              if (!favorite) {
-                openFavorites();
-              }
+
               onClose();
             }}
             onPointerEnter={() => setHoveredOption("favorite")}
@@ -129,7 +127,6 @@ export function ProductContextMenu({ product, position, onClose }) {
                 addToCart(product);
               } else {
                 addToCart(product);
-                openCart();
               }
 
               onClose();
@@ -163,9 +160,6 @@ export function ProductContextMenu({ product, position, onClose }) {
         }}
         onMouseEnter={() => setCloses(true)}
         onMouseLeave={() => setCloses(false)}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
         className="absolute inset-0 bg-s/5"
       />
     </>
