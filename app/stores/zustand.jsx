@@ -13,14 +13,19 @@ export const useCartStore = create()(
     (set, get) => ({
       cart: [],
       purchasedIds: [],
+      favoriteIds: [],
       isCartOpen: false,
+      isFavoritesOpen: false, // <-- Novo estado para controlar a abertura do modal de favoritos
 
-      // Ações do Carrinho
       addToCart: (product) => {
         set((state) => {
           const exists = state.cart.some((item) => item.id === product.id);
-          if (exists) return state;
-          return { cart: [...state.cart, product] };
+
+          return {
+            cart: exists
+              ? state.cart.filter((item) => item.id !== product.id)
+              : [...state.cart, product],
+          };
         });
       },
 
@@ -32,10 +37,34 @@ export const useCartStore = create()(
 
       clearCart: () => set({ cart: [] }),
 
-      // Ações do Drawer (Modal do Carrinho)
+      addToFavorite: (product) => {
+        const id = typeof product === "object" ? product.id : product;
+
+        set((state) => ({
+          favoriteIds: state.favoriteIds.includes(id)
+            ? state.favoriteIds.filter((favoriteId) => favoriteId !== id)
+            : [...state.favoriteIds, id],
+        }));
+      },
+
+      removeFromFavorites: (id) => {
+        set((state) => ({
+          favoriteIds: state.favoriteIds.filter(
+            (favoriteId) => favoriteId !== id,
+          ),
+        }));
+      },
+
+      // Ações do Drawer do Carrinho
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
+
+      // Ações do Drawer de Favoritos (Novas)
+      openFavorites: () => set({ isFavoritesOpen: true }),
+      closeFavorites: () => set({ isFavoritesOpen: false }),
+      toggleFavorites: () =>
+        set((state) => ({ isFavoritesOpen: !state.isFavoritesOpen })),
 
       // Checkout
       checkout: () => {
@@ -53,7 +82,10 @@ export const useCartStore = create()(
 
       // Helpers
       isInCart: (id) => get().cart.some((item) => item.id === id),
+      isFavorite: (id) => get().favoriteIds.includes(id),
+
       isPurchased: (id) => get().purchasedIds.includes(id),
+
       getTotal: () =>
         get().cart.reduce(
           (acc, item) => acc + parseFloat(item.price || 24.0),
@@ -61,12 +93,13 @@ export const useCartStore = create()(
         ),
     }),
     {
-      name: "shopping-cart-storage", // Salva o carrinho e compras no localStorage
+      name: "shopping-cart-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         cart: state.cart,
         purchasedIds: state.purchasedIds,
-      }), // Persiste apenas os itens e histórico de compras
+        favoriteIds: state.favoriteIds,
+      }),
     },
   ),
 );

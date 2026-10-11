@@ -151,9 +151,10 @@ export function FilterDropdown({
                       }}
                       onPointerEnter={() => setHoveredOption(opt.value)}
                       onPointerLeave={() => setHoveredOption(null)}
-                      className={`w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between hover:bg-p/20 transition-colors ${
-                        isSelected ? "text-p font-bold" : "text-p opacity-50"
-                      }`}
+                      className={`w-full px-3 py-2 text-[.9em] font-semibold uppercase flex items-center justify-between 
+                        hover:bg-p/20 transition-colors ${
+                          isSelected ? "text-p font-bold" : "text-p/50"
+                        }`}
                     >
                       <RevealText
                         text={opt.label}

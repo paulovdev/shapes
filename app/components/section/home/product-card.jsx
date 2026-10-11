@@ -71,6 +71,7 @@ export const ProductCard = memo(function ProductCard({
   onSelect,
   offsetY = 0,
   isModalOpen = false,
+  onContextMenu,
 }) {
   const [hover, setHover] = useState(false);
 
@@ -103,6 +104,7 @@ export const ProductCard = memo(function ProductCard({
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
       onPointerCancel={() => setHover(false)}
+      onContextMenu={onContextMenu}
       style={{
         position: "absolute",
         left: 0,

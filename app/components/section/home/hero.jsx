@@ -24,6 +24,8 @@ import { FilterDropdown } from "../../ui/filter-dropdown";
 import Image from "next/image";
 
 import { wordRevealHover } from "@/app/anim/modal.anim";
+import { ProductContextMenu } from "../../ui/context-menu";
+import { FavoritesDrawer } from "../../ui/favs";
 
 const CATEGORIES = ["ALL", "OUTERWEAR", "STREETWEAR", "TECHWEAR"];
 
@@ -42,7 +44,7 @@ const canvasPushVariants = {
       ease: [0.76, 0, 0.24, 1],
     },
   },
-  pushedCart: {
+  pushed1: {
     x: "-20%",
     transition: {
       duration: 0.75,
@@ -54,11 +56,19 @@ const canvasPushVariants = {
 export default function GalleryHero({ loading }) {
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [sortBy, setSortBy] = useState("DEFAULT");
-  const [selectedProject, setSelectedProject] = useState(null);
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const { purchasedIds, addToCart, isInCart, openCart, isCartOpen } =
-    useCartStore();
+  const [contextMenu, setContextMenu] = useState({ product: null, x: 0, y: 0 });
+
+  const {
+    purchasedIds,
+    addToCart,
+    isInCart,
+    openCart,
+    isCartOpen,
+    isFavoritesOpen,
+  } = useCartStore();
+
   const [vw, setVw] = useState(1920);
   const [vh, setVh] = useState(1080);
   const { setDragginS } = useDragging();
@@ -117,6 +127,16 @@ export default function GalleryHero({ loading }) {
 
   const numItems = filteredData.length || 1;
 
+  const handleContextMenu = (e, itemData) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      product: itemData,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  };
+
   const handlePointerDown = (e) => {
     isDragging.current = false;
     lastPointer.current = { x: e.clientX, y: e.clientY };
@@ -149,7 +169,7 @@ export default function GalleryHero({ loading }) {
     if (isDragging.current || clickLock.current) return;
 
     clickLock.current = true;
-    setSelectedProject(itemData);
+    setSelectedProduct(itemData);
 
     setTimeout(() => {
       clickLock.current = false;
@@ -178,7 +198,13 @@ export default function GalleryHero({ loading }) {
       <motion.div
         variants={canvasPushVariants}
         animate={
-          selectedProject ? "pushed" : isCartOpen ? "pushedCart" : "expanded"
+          selectedProduct
+            ? "pushed"
+            : isCartOpen
+              ? "pushed1"
+              : isFavoritesOpen
+                ? "pushed1"
+                : "expanded"
         }
         className="relative w-screen h-svh overflow-hidden bg-p text-s select-none overscroll-none "
       >
@@ -245,7 +271,7 @@ export default function GalleryHero({ loading }) {
             </div>
           </div>
         </motion.nav>
-
+        {/* 
         <motion.nav
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -308,7 +334,7 @@ export default function GalleryHero({ loading }) {
               <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
             </div>
           </div>
-        </motion.nav>
+        </motion.nav> */}
 
         <AnimatePresence mode="wait">
           <motion.section
@@ -320,83 +346,62 @@ export default function GalleryHero({ loading }) {
             className="relative size-full overflow-hidden overscroll-none touch-none"
           >
             <div className="absolute inset-0 pointer-events-auto">
-              {gridCells.map(({ col, row, cellIndex, offsetY }) => (
-                <ProductCard
-                  key={cellIndex}
-                  col={col}
-                  row={row}
-                  cellIndex={cellIndex}
-                  offsetY={offsetY}
-                  cellW={CELL_W}
-                  cellH={CELL_H}
-                  cardW={CARD_W}
-                  cardH={CARD_H}
-                  totalW={TOTAL_GRID_W}
-                  totalH={TOTAL_GRID_H}
-                  canvasX={springX}
-                  canvasY={springY}
-                  filteredData={filteredData}
-                  numItems={numItems}
-                  onSelect={handleCardClick}
-                  animationIndex={cellIndex}
-                />
-              ))}
+              {gridCells.map(({ col, row, cellIndex, offsetY }) => {
+                const itemData = filteredData[cellIndex % numItems];
+
+                return (
+                  <ProductCard
+                    key={cellIndex}
+                    col={col}
+                    row={row}
+                    cellIndex={cellIndex}
+                    offsetY={offsetY}
+                    cellW={CELL_W}
+                    cellH={CELL_H}
+                    cardW={CARD_W}
+                    cardH={CARD_H}
+                    totalW={TOTAL_GRID_W}
+                    totalH={TOTAL_GRID_H}
+                    canvasX={springX}
+                    canvasY={springY}
+                    filteredData={filteredData}
+                    numItems={numItems}
+                    onSelect={handleCardClick}
+                    animationIndex={cellIndex}
+                    onContextMenu={(e) => handleContextMenu(e, itemData)}
+                  />
+                );
+              })}
             </div>
           </motion.section>
         </AnimatePresence>
-
-        <div
-          className="absolute size-full inset-0 px-2.5 py-5 flex items-end justify-center pointer-events-none 
-        max-md:items-start max-md:py-2.5"
-        >
-          <motion.figure
-            initial={{
-              clipPath: "inset(100% 0% 0% 0%)",
-              scale: 0.98,
-            }}
-            animate={{
-              clipPath: "inset(0% 0% 0% 0%)",
-              scale: 1,
-            }}
-            exit={{
-              clipPath: "inset(0% 0% 100% 0%)",
-              scale: 0.98,
-            }}
-            transition={{
-              duration: 0.75,
-              delay: loading ? 3.5 : 0,
-              ease: [0.76, 0, 0.24, 1],
-            }}
-          >
-            <Image
-              alt=""
-              src="/images/bars.png"
-              width={423}
-              height={416}
-              className="object-cover w-30 h-8"
-            />
-          </motion.figure>
-        </div>
       </motion.div>
 
       <AnimatePresence>
-        {selectedProject && (
+        {selectedProduct && (
           <ProductModal
-            project={selectedProject}
+            product={selectedProduct}
             onClose={() => {
-              setSelectedProject(null);
+              setSelectedProduct(null);
             }}
-            onAddToCart={(project) => {
-              addToCart(project);
-              openCart();
-            }}
-            purchasedIds={purchasedIds}
-            isInCart={isInCart}
           />
         )}
       </AnimatePresence>
 
+      {/* v */}
+
+      <AnimatePresence>
+        <ProductContextMenu
+          product={contextMenu.product}
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={() => setContextMenu({ product: null, x: 0, y: 0 })}
+        />
+      </AnimatePresence>
+
+      {/* v */}
+
       <CartDrawer />
+      <FavoritesDrawer />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { IoMdContact } from "react-icons/io";
-import { MdShoppingBag } from "react-icons/md";
+import { MdFavorite, MdShoppingBag } from "react-icons/md";
 import Link from "next/link";
 import { useState } from "react";
 import { useCartStore } from "../stores/zustand";
@@ -90,7 +90,7 @@ const HoverText = ({
 };
 
 const Nav = () => {
-  const { openCart, cart = [] } = useCartStore();
+  const { openCart, cart = [], openFavorites, favoriteIds } = useCartStore();
   const [hovered, setHovered] = useState(null);
 
   return (
@@ -117,6 +117,21 @@ const Nav = () => {
       </div>
 
       <div className="flex items-center gap-6">
+        <div
+          className="overflow-hidden"
+          data-cursor="hover"
+          onPointerEnter={() => setHovered("fav")}
+          onPointerLeave={() => setHovered(null)}
+          onClick={openFavorites}
+        >
+          <HoverText
+            text={`FAVORITES (${favoriteIds.length - 1})`}
+            icon={<MdFavorite className="text-[1.1em]" />}
+            animate={true}
+            hover={hovered === "fav"}
+            className="text-p text-[.9em] font-medium uppercase"
+          />
+        </div>
         <div
           className="overflow-hidden"
           data-cursor="hover"

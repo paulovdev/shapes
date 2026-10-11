@@ -25,7 +25,7 @@ const Button = ({
   download,
   disabled = false,
   active = false,
-  icon: Icon,
+
   className = "",
   bgColor = "bg-s",
 

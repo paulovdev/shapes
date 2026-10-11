@@ -20,6 +20,7 @@ import {
 
 import { Reveal } from "../../ui/reveal";
 import Button from "../../ui/button";
+import { useCartStore } from "@/app/stores/zustand";
 
 const MINIMAP_IMAGES = [
   "/images/product-overview/product_minimap_01.jpg",
@@ -49,28 +50,27 @@ const clipPathDirectionalVariants = {
   }),
 };
 
-export const ProductModal = memo(function ProductModal({
-  project,
-  onClose,
-  onAddToCart,
-  purchasedIds = [],
-  isInCart = () => false,
-}) {
-  if (!project) return null;
-
+export const ProductModal = memo(function ProductModal({ product, onClose }) {
+  if (!product) return null;
+  const {
+    addToCart,
+    addToFavorite,
+    isFavorite,
+    isInCart,
+    openCart,
+    openFavorites,
+    purchasedIds,
+  } = useCartStore();
   const scrollContainerRef = useRef(null);
 
   const [[selectedImgIndex, direction], setPage] = useState([0, 0]);
   const [selectedSize, setSelectedSize] = useState(
-    project.sizes ? project.sizes[0] : "M",
+    product.sizes ? product.sizes[0] : "M",
   );
 
-  const isPurchased = purchasedIds.includes(project.id);
-  const inCart = isInCart(project.id);
-
   const gallery = useMemo(() => {
-    return [project.img || MINIMAP_IMAGES[0], ...MINIMAP_IMAGES.slice(1)];
-  }, [project.img]);
+    return [product.img || MINIMAP_IMAGES[0], ...MINIMAP_IMAGES.slice(1)];
+  }, [product.img]);
 
   useEffect(() => {
     const wrapper = scrollContainerRef.current;
@@ -121,6 +121,10 @@ export const ProductModal = memo(function ProductModal({
     setPage([nextIndex, 1]);
   };
 
+  const isPurchased = purchasedIds.includes(product.id);
+  const favorite = isFavorite(product?.id);
+  const inCart = isInCart(product?.id);
+
   return (
     <div className="fixed inset-0 z-200 flex justify-start">
       <motion.div
@@ -149,10 +153,10 @@ export const ProductModal = memo(function ProductModal({
                 className="flex items-center gap-3"
               >
                 <span className="text-p text-[.9em] font-semibold uppercase bg-s px-4 py-2 tracking-wider">
-                  [{project.category || "APPAREL"}]
+                  [{product.category || "APPAREL"}]
                 </span>
                 <span className="text-s text-[.9em] font-semibold uppercase">
-                  {project.id ? `${project.id}` : "APP-2026-X"}
+                  {product.id ? `${product.id}` : "APP-2026-X"}
                 </span>
               </motion.div>
 
@@ -173,7 +177,7 @@ export const ProductModal = memo(function ProductModal({
                 className="mb-5 text-s/50 text-[.9em] font-semibold uppercase"
               />
               <Reveal
-                text={project.title || "UNTITLED PIECE"}
+                text={product.title || "UNTITLED PIECE"}
                 delay={0.5}
                 className="text-[clamp(40px,8vw,82px)] font-pp-l font-semibold leading-[90%] tracking-[-6%] text-s"
               />
@@ -197,7 +201,7 @@ export const ProductModal = memo(function ProductModal({
                 >
                   <Image
                     src={gallery[selectedImgIndex]}
-                    alt={project.title || "Product image"}
+                    alt={product.title || "Product image"}
                     fill
                     sizes="(max-width: 768px) 100vw, 700px"
                     priority
@@ -270,7 +274,7 @@ export const ProductModal = memo(function ProductModal({
                     PRICE
                   </span>
                   <p className="mb-5 text-[clamp(40px,8vw,82px)] font-pp-l text-center font-semibold leading-[90%] tracking-[-6%] text-s">
-                    {project.price || "R$ 389,00"}
+                    {product.price || "R$ 389,00"}
                   </p>
                   <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase">
                     USD / TAX INCL.
@@ -282,7 +286,7 @@ export const ProductModal = memo(function ProductModal({
                     COLLECTION
                   </span>
                   <p className="mb-5 text-[clamp(40px,8vw,82px)] font-pp-l text-center font-semibold leading-[90%] tracking-[-6%] text-s">
-                    {project.year || "2026"}
+                    {product.year || "2026"}
                   </p>
                   <span className="mb-5 text-s/50 text-[.9em] font-semibold uppercase">
                     SEASON DROP
@@ -295,7 +299,7 @@ export const ProductModal = memo(function ProductModal({
                   AVAILABLE SIZES
                 </span>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {(project.sizes || ["P", "M", "G", "GG"]).map((sz) => (
+                  {(product.sizes || ["P", "M", "G", "GG"]).map((sz) => (
                     <Button
                       key={sz}
                       onClick={() => setSelectedSize(sz)}
@@ -307,27 +311,39 @@ export const ProductModal = memo(function ProductModal({
               </div>
 
               <motion.div custom={6} variants={itemAnim} className="mt-2">
-                {isPurchased ? (
+                <div className="flex items-center gap-2.5">
+                  {isPurchased ? (
+                    <Button
+                      href={product.downloadUrl || "#"}
+                      download
+                      text="DOWNLOAD RECEIPT & PROOF"
+                      className="w-full font-bold uppercase text-sm tracking-wider"
+                    />
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (inCart) {
+                          addToCart({ ...product, selectedSize });
+                        } else {
+                          addToCart({ ...product, selectedSize });
+                          openCart();
+                        }
+                      }}
+                      text={
+                        inCart
+                          ? "REMOVE FROM BAG"
+                          : `ADD (${selectedSize}) — $${product.price || "38"}`
+                      }
+                      className="w-full font-semibold uppercase text-[.9em] tracking-wider"
+                    />
+                  )}
                   <Button
-                    href={project.downloadUrl || "#"}
-                    download
-                    icon={FaFolderOpen}
-                    text="DOWNLOAD RECEIPT & PROOF"
-                    className="w-full font-bold uppercase text-sm tracking-wider"
+                    text="❤"
+                    active={favorite}
+                    disabled={favorite}
+                    onClick={() => addToFavorite(product)}
                   />
-                ) : (
-                  <Button
-                    onClick={() => onAddToCart({ ...project, selectedSize })}
-                    disabled={inCart}
-                    icon={inCart ? MdCheck : FaCartPlus}
-                    text={
-                      inCart
-                        ? "ON THE CART"
-                        : `ADD (${selectedSize}) — $${project.price || "38"}`
-                    }
-                    className="w-full font-semibold uppercase text-[.9em] tracking-wider"
-                  />
-                )}
+                </div>
 
                 <div className="flex justify-between items-center text-s text-[.9em] mt-10">
                   <span>SHAPES // GARMENT ARCHIVE</span>
