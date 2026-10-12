@@ -42,7 +42,6 @@ export const useCartStore = create()(
         });
       },
 
-      // Atualiza ou remove se a quantidade for <= 0
       updateQuantity: (id, quantity) => {
         set((state) => {
           if (quantity <= 0) {

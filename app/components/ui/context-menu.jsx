@@ -49,7 +49,8 @@ const RevealText = ({
 
 export function ProductContextMenu({ product, position, onClose }) {
   const [hoveredOption, setHoveredOption] = useState(null);
-  const { addToCart, addToFavorite, isFavorite, isInCart } = useCartStore();
+  const { addToCart, removeFromCart, addToFavorite, isFavorite, isInCart } =
+    useCartStore();
   const setCloses = useClose((state) => state.setCloses);
 
   const closingRef = useRef(false);
@@ -164,7 +165,7 @@ export function ProductContextMenu({ product, position, onClose }) {
             type="button"
             onClick={() => {
               if (inCart) {
-                addToCart(product);
+                removeFromCart(product.id);
               } else {
                 addToCart(product);
               }

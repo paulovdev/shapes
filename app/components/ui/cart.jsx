@@ -59,7 +59,7 @@ export function CartDrawer() {
   const [appliedPromo, setAppliedPromo] = useState(true);
   const [newsletter, setNewsletter] = useState(false);
 
-  const promoDiscount = appliedPromo ? 10 : 0;
+  const promoDiscount = appliedPromo ? 20 : 0;
   const generalDiscount = 40;
   const bonuses = 0;
   const delivery = 0;
@@ -186,7 +186,7 @@ export function CartDrawer() {
               </div>
 
               {/* Items List */}
-              <div className="mt-5 space-y-3 max-h-100 overflow-y-auto custom-scrollbar">
+              <div className="mt-5 space-y-3 max-h-110 overflow-y-auto custom-scrollbar">
                 {cart.length === 0 ? (
                   <div className="py-10 text-center">
                     <p className="text-[.9em] font-semibold text-s/60 uppercase">
@@ -194,14 +194,14 @@ export function CartDrawer() {
                     </p>
                   </div>
                 ) : (
-                  cart.map((item, idx) => {
+                  cart.map((item, i) => {
                     const quantity = item.quantity || 1;
                     const itemPrice = parseFloat(item.price || 24.0);
                     const itemTotalPrice = itemPrice * quantity;
 
                     return (
                       <div
-                        key={item.id || idx}
+                        key={item.id || i}
                         className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
                       >
                         <div className="flex items-center gap-2.5">
@@ -303,7 +303,7 @@ export function CartDrawer() {
               </div>
 
               {/* Promocode */}
-              <div className="mt-5 flex items-center justify-between border-t border-b border-s/10 py-2.5">
+              <div className="mt-5 flex items-center justify-between  border-b border-s/10 pb-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-s text-[.9rem] font-semibold uppercase">
                     Promocode:
