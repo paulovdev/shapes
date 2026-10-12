@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AiOutlineDrag } from "react-icons/ai";
 import { isMobile } from "react-device-detect";
 
-import { useDragging, useClose } from "@/app/stores/zustand"; 
+import { useDragging, useClose } from "@/app/stores/zustand";
 import { IoClose } from "react-icons/io5";
 
 export default function CustomCursor() {
@@ -70,10 +70,13 @@ export default function CustomCursor() {
 
   if (isMobile) return null;
 
-  const cursorMode = dragginS || closes ? "action" : mode;
-
-  const size = cursorMode === "action" ? 40 : cursorMode === "hover" ? 10 : 5;
-
+  const cursorMode = dragginS ? "drag" : closes ? "close" : mode;
+  const size =
+    cursorMode === "drag" || cursorMode === "close"
+      ? 40
+      : cursorMode === "hover"
+        ? 10
+        : 5;
   return (
     <motion.div
       className="pointer-events-none mix-blend-exclusion fixed top-0 left-0 z-99999 -translate-x-1/2 -translate-y-1/2"
@@ -92,12 +95,15 @@ export default function CustomCursor() {
           stiffness: 150,
           damping: 15,
         }}
-        className="pointer-events-none flex items-center justify-center bg-p text-p"
+        className="pointer-events-none flex items-center justify-center bg-white text-white"
       >
-        {dragginS && (
+        {cursorMode === "drag" && (
           <AiOutlineDrag size={24} className="pointer-events-none text-s" />
         )}
-        {closes && <IoClose size={24} className="pointer-events-none text-s" />}
+
+        {cursorMode === "close" && (
+          <IoClose size={24} className="pointer-events-none text-s" />
+        )}
       </motion.div>
     </motion.div>
   );

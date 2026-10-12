@@ -21,7 +21,7 @@ import { ProductModal } from "./product-modal";
 import { ProductCard } from "./product-card";
 import { CartDrawer } from "../../ui/cart";
 import { FilterDropdown } from "../../ui/filter-dropdown";
-import Image from "next/image";
+import { isMobile } from "react-device-detect";
 
 import { wordRevealHover } from "@/app/anim/modal.anim";
 import { ProductContextMenu } from "../../ui/context-menu";
@@ -203,133 +203,135 @@ export default function GalleryHero({ loading }) {
         }
         className="relative w-screen h-svh overflow-hidden bg-p text-s select-none overscroll-none "
       >
-        <motion.nav
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{
-            duration: 0.75,
-            delay: loading ? 3.5 : 0,
-            ease: [0.76, 0, 0.24, 1],
-          }}
-          className="max-md:hidden fixed top-0 left-0 w-full p-4 flex items-center justify-center z-100 select-none pointer-events-none"
-        >
-          <div className="flex items-center gap-2.5">
-            <div
-              onPointerLeave={() => setHoveredCategory(null)}
-              className="hidden md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
-            >
-              {CATEGORIES.map((cat) => {
-                const isActive = activeCategory === cat;
-                const isHovered = hoveredCategory === cat;
+        {isMobile ? (
+          <motion.nav
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.75,
+              delay: loading ? 3.5 : 0,
+              ease: [0.76, 0, 0.24, 1],
+            }}
+            className="hidden fixed bottom-0 left-0 w-full p-4 max-md:flex items-center justify-center z-100 select-none pointer-events-none"
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                onPointerLeave={() => setHoveredCategory(null)}
+                className="hidden  max-md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
+              >
+                {CATEGORIES.map((cat) => {
+                  const isActive = activeCategory === cat;
+                  const isHovered = hoveredCategory === cat;
 
-                const isTarget = hoveredCategory ? isHovered : isActive;
+                  const isTarget = hoveredCategory ? isHovered : isActive;
 
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    onPointerEnter={() => setHoveredCategory(cat)}
-                    className={`relative px-4 py-1 font-semibold text-[.9em] uppercase transition-colors duration-200 z-10 ${
-                      isTarget ? "text-s" : "text-p"
-                    }`}
-                    data-cursor="hover"
-                  >
-                    {isTarget && (
-                      <motion.div
-                        layoutId="activeCategoryTab"
-                        className="absolute inset-0 bg-p z-[-1]"
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                    <div className="h-[20px] overflow-hidden cursor-default">
-                      <motion.div
-                        variants={wordRevealHover}
-                        initial="initial"
-                        animate={isHovered ? "animate" : "initial"}
-                        className="flex flex-col items-start justify-center"
-                      >
-                        <span className="block">{cat}</span>
-                        <span className="block">{cat}</span>
-                      </motion.div>
-                    </div>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      onPointerEnter={() => setHoveredCategory(cat)}
+                      className={`relative px-4 py-1 font-semibold text-[.9em] uppercase transition-colors duration-200 z-10 ${
+                        isTarget ? "text-s" : "text-p"
+                      }`}
+                      data-cursor="hover"
+                    >
+                      {isTarget && (
+                        <motion.div
+                          layoutId="activeCategoryTab"
+                          className="absolute inset-0 bg-p z-[-1]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <div className="h-[20px] overflow-hidden cursor-default">
+                        <motion.div
+                          variants={wordRevealHover}
+                          initial="initial"
+                          animate={isHovered ? "animate" : "initial"}
+                          className="flex flex-col items-start justify-center"
+                        >
+                          <span className="block">{cat}</span>
+                          <span className="block">{cat}</span>
+                        </motion.div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="pointer-events-auto">
+                <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
+              </div>
             </div>
-            <div className="pointer-events-auto">
-              <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
-            </div>
-          </div>
-        </motion.nav>
-        {/* 
-        <motion.nav
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{
-            duration: 0.75,
-            delay: loading ? 3.5 : 0,
-            ease: [0.76, 0, 0.24, 1],
-          }}
-          className="hidden fixed bottom-0 left-0 w-full p-4 max-md:flex items-center justify-center z-100 select-none pointer-events-none"
-        >
-          <div className="flex items-center gap-2.5">
-            <div
-              onPointerLeave={() => setHoveredCategory(null)}
-              className="hidden  max-md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
-            >
-              {CATEGORIES.map((cat) => {
-                const isActive = activeCategory === cat;
-                const isHovered = hoveredCategory === cat;
+          </motion.nav>
+        ) : (
+          <motion.nav
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.75,
+              delay: loading ? 3.5 : 0,
+              ease: [0.76, 0, 0.24, 1],
+            }}
+            className="max-md:hidden fixed top-0 left-0 w-full p-4 flex items-center justify-center z-100 select-none pointer-events-none"
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                onPointerLeave={() => setHoveredCategory(null)}
+                className="hidden md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
+              >
+                {CATEGORIES.map((cat) => {
+                  const isActive = activeCategory === cat;
+                  const isHovered = hoveredCategory === cat;
 
-                const isTarget = hoveredCategory ? isHovered : isActive;
+                  const isTarget = hoveredCategory ? isHovered : isActive;
 
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    onPointerEnter={() => setHoveredCategory(cat)}
-                    className={`relative px-4 py-1 font-semibold text-[.9em] uppercase transition-colors duration-200 z-10 ${
-                      isTarget ? "text-s" : "text-p"
-                    }`}
-                    data-cursor="hover"
-                  >
-                    {isTarget && (
-                      <motion.div
-                        layoutId="activeCategoryTab"
-                        className="absolute inset-0 bg-p z-[-1]"
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                    <div className="h-[20px] overflow-hidden cursor-default">
-                      <motion.div
-                        variants={wordRevealHover}
-                        initial="initial"
-                        animate={isHovered ? "animate" : "initial"}
-                        className="flex flex-col items-start justify-center"
-                      >
-                        <span className="block">{cat}</span>
-                        <span className="block">{cat}</span>
-                      </motion.div>
-                    </div>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      onPointerEnter={() => setHoveredCategory(cat)}
+                      className={`relative px-4 py-1 font-semibold text-[.9em] uppercase transition-colors duration-200 z-10 ${
+                        isTarget ? "text-s" : "text-p"
+                      }`}
+                      data-cursor="hover"
+                    >
+                      {isTarget && (
+                        <motion.div
+                          layoutId="activeCategoryTab"
+                          className="absolute inset-0 bg-p z-[-1]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <div className="h-[20px] overflow-hidden cursor-default">
+                        <motion.div
+                          variants={wordRevealHover}
+                          initial="initial"
+                          animate={isHovered ? "animate" : "initial"}
+                          className="flex flex-col items-start justify-center"
+                        >
+                          <span className="block">{cat}</span>
+                          <span className="block">{cat}</span>
+                        </motion.div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="pointer-events-auto">
+                <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
+              </div>
             </div>
-            <div className="pointer-events-auto">
-              <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
-            </div>
-          </div>
-        </motion.nav> */}
+          </motion.nav>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.section
@@ -364,6 +366,7 @@ export default function GalleryHero({ loading }) {
                     onSelect={handleCardClick}
                     animationIndex={cellIndex}
                     onContextMenu={(e) => handleContextMenu(e, itemData)}
+                    contextMenu={contextMenu.product?.id === itemData.id}
                   />
                 );
               })}

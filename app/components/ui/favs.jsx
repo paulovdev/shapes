@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdClose, MdFavorite, MdShoppingBag } from "react-icons/md";
 import { FaTrash } from "react-icons/fa6";
@@ -18,12 +18,60 @@ import {
 } from "@/app/anim/modal.anim";
 
 export function FavoritesDrawer({ onAddToCart }) {
+  const closingRef = useRef(false);
+  const openingRef = useRef(true);
+  const cursorTimerRef = useRef(null);
+
   const { favoriteIds, removeFromFavorites, isFavoritesOpen, closeFavorites } =
     useCartStore();
-  const { setCloses } = useClose();
+
+  const setCloses = useClose((state) => state.setCloses);
+
   const favoriteProducts = products.filter((product) =>
     favoriteIds.includes(product.id),
   );
+  const handleOverlayEnter = () => {
+    if (closingRef.current) return;
+
+    if (openingRef.current) {
+      clearTimeout(cursorTimerRef.current);
+
+      cursorTimerRef.current = setTimeout(() => {
+        if (!closingRef.current) {
+          setCloses(true);
+          openingRef.current = false;
+        }
+      }, 750);
+
+      return;
+    }
+
+    setCloses(true);
+  };
+
+  const handleOverlayLeave = () => {
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+  };
+
+  const handleClose = () => {
+    closingRef.current = true;
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+    closeFavorites();
+  };
+
+  useEffect(() => {
+    if (isFavoritesOpen) {
+      closingRef.current = false;
+      openingRef.current = true;
+    } else {
+      clearTimeout(cursorTimerRef.current);
+      setCloses(false);
+    }
+
+    return () => clearTimeout(cursorTimerRef.current);
+  }, [isFavoritesOpen, setCloses]);
 
   return (
     <AnimatePresence>
@@ -34,13 +82,16 @@ export function FavoritesDrawer({ onAddToCart }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            onClick={() => {
-              closeFavorites();
-              setCloses(false);
-            }}
-            onMouseEnter={() => setCloses(true)}
-            onMouseLeave={() => setCloses(false)}
-            className="absolute inset-0 bg-s/25 backdrop-blur-md"
+            className="absolute inset-0 z-0 bg-s/25 backdrop-blur-md"
+          />
+
+          <button
+            type="button"
+            aria-label="Fechar favoritos"
+            onClick={handleClose}
+            onMouseEnter={handleOverlayEnter}
+            onMouseLeave={handleOverlayLeave}
+            className="absolute inset-0 z-[1]"
           />
 
           <motion.div
@@ -65,10 +116,7 @@ export function FavoritesDrawer({ onAddToCart }) {
 
                 <motion.button
                   variants={closeBtnAnim}
-                  onClick={() => {
-                    closeFavorites();
-                    setCloses(false);
-                  }}
+                  onClick={handleClose}
                   className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                   data-cursor="hover"
                 >

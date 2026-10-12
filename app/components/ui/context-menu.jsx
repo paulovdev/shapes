@@ -49,14 +49,7 @@ const RevealText = ({
 
 export function ProductContextMenu({ product, position, onClose }) {
   const [hoveredOption, setHoveredOption] = useState(null);
-  const {
-    addToCart,
-    addToFavorite,
-    isFavorite,
-    isInCart,
-    openCart,
-    openFavorites,
-  } = useCartStore();
+  const { addToCart, addToFavorite, isFavorite, isInCart } = useCartStore();
   const { setCloses } = useClose();
   useEffect(() => {
     const handleClick = () => onClose();
@@ -82,7 +75,7 @@ export function ProductContextMenu({ product, position, onClose }) {
         initial={{ opacity: 0, scale: 0.95, y: -4 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -4 }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
         style={{ top: position.y, left: position.x }}
         className="fixed z-9999 w-56 bg-s text-p border border-s/20 p-2 shadow-2xl select-none"
         onClick={(e) => e.stopPropagation()}

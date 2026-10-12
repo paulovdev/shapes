@@ -47,6 +47,13 @@ const clipPathDirectionalVariants = {
 
 export const ProductModal = memo(function ProductModal({ product, onClose }) {
   if (!product) return null;
+
+  const closingRef = useRef(false);
+  const openingRef = useRef(true);
+  const cursorTimerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+
+  const { setCloses } = useClose();
   const {
     addToCart,
     addToFavorite,
@@ -56,12 +63,13 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
     purchasedIds,
   } = useCartStore();
 
-  const scrollContainerRef = useRef(null);
-  const { setCloses } = useClose();
   const [[selectedImgIndex, direction], setPage] = useState([0, 0]);
   const [selectedSize, setSelectedSize] = useState(
     product.sizes ? product.sizes[0] : "M",
   );
+  const isPurchased = purchasedIds.includes(product.id);
+  const favorite = isFavorite(product?.id);
+  const inCart = isInCart(product?.id);
 
   const gallery = useMemo(() => {
     return [product.img || MINIMAP_IMAGES[0], ...MINIMAP_IMAGES.slice(1)];
@@ -116,9 +124,46 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
     setPage([nextIndex, 1]);
   };
 
-  const isPurchased = purchasedIds.includes(product.id);
-  const favorite = isFavorite(product?.id);
-  const inCart = isInCart(product?.id);
+  const handleOverlayEnter = () => {
+    if (closingRef.current) return;
+
+    if (openingRef.current) {
+      cursorTimerRef.current = setTimeout(() => {
+        if (!closingRef.current) {
+          setCloses(true);
+          openingRef.current = false;
+        }
+      }, 750);
+
+      return;
+    }
+
+    setCloses(true);
+  };
+
+  const handleOverlayLeave = () => {
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+  };
+
+  const handleClose = () => {
+    closingRef.current = true;
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (product) {
+      closingRef.current = false;
+      openingRef.current = true;
+    }
+
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+
+    return () => clearTimeout(cursorTimerRef.current);
+  }, [product, setCloses]);
 
   return (
     <div className="fixed inset-0 z-200 flex justify-start">
@@ -127,13 +172,16 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
         initial="initial"
         animate="animate"
         exit="exit"
-        onClick={() => {
-          onClose();
-          setCloses(false);
-        }}
-        onMouseEnter={() => setCloses(true)}
-        onMouseLeave={() => setCloses(false)}
-        className="absolute inset-0 bg-s/25 backdrop-blur-md"
+        className="absolute inset-0 z-0 bg-s/25 backdrop-blur-md"
+      />
+
+      <button
+        type="button"
+        aria-label="Fechar produto"
+        onClick={handleClose}
+        onMouseEnter={handleOverlayEnter}
+        onMouseLeave={handleOverlayLeave}
+        className="absolute inset-0 z-[1]"
       />
 
       <motion.div
@@ -162,10 +210,7 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
 
               <motion.button
                 variants={closeBtnAnim}
-                onClick={() => {
-                  onClose();
-                  setCloses(false);
-                }}
+                onClick={handleClose}
                 className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
                 data-cursor="hover"
               >

@@ -189,8 +189,8 @@ export const ProductCard = memo(function ProductCard({
         </div>
       </div>
 
-      {hover && (
-        <div className="pointer-events-none absolute inset-0 size-full border border-s/15 transition-all duration-700 delay-100" />
+      {(hover || contextMenu) && (
+        <div className="pointer-events-none absolute inset-0 size-full border border-s/15" />
       )}
     </motion.div>
   );
