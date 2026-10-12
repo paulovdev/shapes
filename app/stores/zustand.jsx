@@ -21,16 +21,40 @@ export const useCartStore = create()(
       purchasedIds: [],
       favoriteIds: [],
       isCartOpen: false,
-      isFavoritesOpen: false,  
+      isFavoritesOpen: false,
 
       addToCart: (product) => {
         set((state) => {
-          const exists = state.cart.some((item) => item.id === product.id);
+          const existingIndex = state.cart.findIndex(
+            (item) => item.id === product.id,
+          );
+
+          if (existingIndex > -1) {
+            const updatedCart = [...state.cart];
+            updatedCart[existingIndex].quantity =
+              (updatedCart[existingIndex].quantity || 1) + 1;
+            return { cart: updatedCart };
+          }
 
           return {
-            cart: exists
-              ? state.cart.filter((item) => item.id !== product.id)
-              : [...state.cart, product],
+            cart: [...state.cart, { ...product, quantity: 1 }],
+          };
+        });
+      },
+
+      // Atualiza ou remove se a quantidade for <= 0
+      updateQuantity: (id, quantity) => {
+        set((state) => {
+          if (quantity <= 0) {
+            return {
+              cart: state.cart.filter((item) => item.id !== id),
+            };
+          }
+
+          return {
+            cart: state.cart.map((item) =>
+              item.id === id ? { ...item, quantity } : item,
+            ),
           };
         });
       },
@@ -61,12 +85,11 @@ export const useCartStore = create()(
         }));
       },
 
-      // Ações do Drawer do Carrinho
+      // Drawer Actions
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
 
-      // Ações do Drawer de Favoritos (Novas)
       openFavorites: () => set({ isFavoritesOpen: true }),
       closeFavorites: () => set({ isFavoritesOpen: false }),
       toggleFavorites: () =>
@@ -89,14 +112,15 @@ export const useCartStore = create()(
       // Helpers
       isInCart: (id) => get().cart.some((item) => item.id === id),
       isFavorite: (id) => get().favoriteIds.includes(id),
-
       isPurchased: (id) => get().purchasedIds.includes(id),
 
+      // Calcula subtotal multiplicando o preço pela quantidade
       getTotal: () =>
-        get().cart.reduce(
-          (acc, item) => acc + parseFloat(item.price || 24.0),
-          0,
-        ),
+        get().cart.reduce((acc, item) => {
+          const price = parseFloat(item.price || 24.0);
+          const quantity = item.quantity || 1;
+          return acc + price * quantity;
+        }, 0),
     }),
     {
       name: "shopping-cart-storage",

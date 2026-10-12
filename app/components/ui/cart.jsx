@@ -1,33 +1,72 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdClose, MdShoppingBag } from "react-icons/md";
-import { FaTrash } from "react-icons/fa6";
+import { MdShoppingBag } from "react-icons/md";
+import { FaTrash, FaPlus, FaMinus } from "react-icons/fa6";
 import Image from "next/image";
 
 import { useCartStore, useClose } from "@/app/stores/zustand";
 import Button from "./button";
 
-import {
-  closeBtnAnim,
-  drawerRightAnim,
-  itemAnim,
-  overlayAnim,
-} from "@/app/anim/modal.anim";
+import { drawerRightAnim, itemAnim, overlayAnim } from "@/app/anim/modal.anim";
 import ButtonIcon from "./button-icon";
 import { RiCloseLargeFill } from "react-icons/ri";
+
+const wordReveal = {
+  initial: {
+    y: "100%",
+    opacity: 0,
+  },
+  animate: {
+    y: "0%",
+    opacity: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+  exit: {
+    y: "-100%",
+    opacity: 0,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+};
 
 export function CartDrawer() {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
   const cursorTimerRef = useRef(null);
 
-  const { cart, isCartOpen, closeCart, removeFromCart, checkout, getTotal } =
-    useCartStore();
+  const {
+    cart,
+    isCartOpen,
+    closeCart,
+    removeFromCart,
+    updateQuantity,
+    checkout,
+    getTotal,
+  } = useCartStore();
 
   const setCloses = useClose((state) => state.setCloses);
-  const total = getTotal ? getTotal() : 0;
+  const subtotal = getTotal ? getTotal() : 0;
+
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [promoCode, setPromoCode] = useState("OFFSET20");
+  const [appliedPromo, setAppliedPromo] = useState(true);
+  const [newsletter, setNewsletter] = useState(false);
+
+  const promoDiscount = appliedPromo ? 10 : 0;
+  const generalDiscount = 40;
+  const bonuses = 0;
+  const delivery = 0;
+  const total = Math.max(
+    0,
+    subtotal - promoDiscount - generalDiscount + delivery,
+  );
 
   const handleOverlayEnter = () => {
     if (closingRef.current) return;
@@ -70,6 +109,11 @@ export function CartDrawer() {
     return () => clearTimeout(cursorTimerRef.current);
   }, [isCartOpen, setCloses]);
 
+  const totalItemsCount = cart.reduce(
+    (acc, item) => acc + (item.quantity || 1),
+    0,
+  );
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -96,19 +140,35 @@ export function CartDrawer() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative z-10 w-full max-w-[480px] h-screen bg-p text-s border-l border-s/10 p-5 
-            flex flex-col justify-between shadow-2xl"
+            className="relative z-10 w-full max-w-150 h-screen bg-p text-s border-l border-s/10 p-5 
+            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar"
           >
             <div>
+              {/* Header */}
               <div className="relative flex items-center justify-between w-full border-b border-s/10 pb-4">
                 <motion.div
                   custom={1}
                   variants={itemAnim}
-                  className="flex items-center gap-2.5 bg-s text-p p-2"
+                  className="flex items-center gap-2.5 bg-s p-2"
                 >
-                  <MdShoppingBag className="text-[1em]" />
-                  <span className="text-[0.8rem] font-bold tracking-widest">
-                    CART BAG ({cart.length})
+                  <MdShoppingBag className="text-[1em] text-p" />
+                  <span className="text-p text-[0.8rem] font-semibold tracking-widest flex items-center gap-1">
+                    CART BAG (
+                    <span className="relative inline-block overflow-hidden h-[18px] w-4 text-center align-middle">
+                      <AnimatePresence mode="popLayout">
+                        <motion.span
+                          key={totalItemsCount}
+                          variants={wordReveal}
+                          initial="initial"
+                          animate="animate"
+                          exit="exit"
+                          className="flex flex-col absolute inset-0 items-center justify-center"
+                        >
+                          <span className="h-[18px]">{totalItemsCount}</span>
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
+                    )
                   </span>
                 </motion.div>
 
@@ -125,66 +185,237 @@ export function CartDrawer() {
                 />
               </div>
 
-              <div className="mt-6 space-y-3 max-h-[calc(100vh-260px)] overflow-y-auto custom-scrollbar">
+              {/* Items List */}
+              <div className="mt-5 space-y-3 max-h-100 overflow-y-auto custom-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="py-20 text-center">
+                  <div className="py-10 text-center">
                     <p className="text-[.9em] font-semibold text-s/60 uppercase">
                       No items in your archive bag
                     </p>
                   </div>
                 ) : (
-                  cart.map((item, idx) => (
-                    <div
-                      key={item.id || idx}
-                      className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-14 h-14 border border-p/10 flex items-center justify-center p-1 bg-s/5">
-                          <Image
-                            src={item.img}
-                            alt={item.title}
-                            width={231}
-                            height={233}
-                            className="object-contain size-full"
+                  cart.map((item, idx) => {
+                    const quantity = item.quantity || 1;
+                    const itemPrice = parseFloat(item.price || 24.0);
+                    const itemTotalPrice = itemPrice * quantity;
+
+                    return (
+                      <div
+                        key={item.id || idx}
+                        className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-14 h-14 border border-p/10 flex items-center justify-center p-1 bg-s/5">
+                            <Image
+                              src={item.img}
+                              alt={item.title}
+                              width={231}
+                              height={233}
+                              className="object-contain size-full"
+                            />
+                          </div>
+
+                          <div>
+                            <h4 className="text-[.9em] font-semibold text-s uppercase">
+                              {item.title}
+                            </h4>
+                            <span className="text-[.9em] font-semibold text-s/60 uppercase relative inline-block overflow-hidden h-[22px]">
+                              <AnimatePresence mode="popLayout">
+                                <motion.span
+                                  key={itemTotalPrice}
+                                  variants={wordReveal}
+                                  initial="initial"
+                                  animate="animate"
+                                  exit="exit"
+                                  className="flex flex-col"
+                                >
+                                  <span className="h-[22px]">
+                                    ${itemTotalPrice.toFixed(2)} USD
+                                  </span>
+                                </motion.span>
+                              </AnimatePresence>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-8">
+                          <div className="flex items-center">
+                            <ButtonIcon
+                              icon={FaMinus}
+                              onClick={() =>
+                                updateQuantity(item.id, quantity - 1)
+                              }
+                              size="size-10"
+                              iconSize="text-[.9rem]"
+                              bgNormal="bg-s"
+                              bgHover="bg-p"
+                              textNormal="text-p"
+                              textHover="text-s"
+                              className="border border-black/1"
+                            />
+                            <span className="relative inline-block overflow-hidden h-[20px] w-10 text-center">
+                              <AnimatePresence mode="popLayout">
+                                <motion.span
+                                  key={quantity}
+                                  variants={wordReveal}
+                                  initial="initial"
+                                  animate="animate"
+                                  exit="exit"
+                                  className="flex flex-col absolute inset-0 items-center justify-center"
+                                >
+                                  <span className="h-[20px] text-s text-[.9rem] font-semibold uppercase">
+                                    {quantity}
+                                  </span>
+                                </motion.span>
+                              </AnimatePresence>
+                            </span>
+                            <ButtonIcon
+                              icon={FaPlus}
+                              onClick={() =>
+                                updateQuantity(item.id, quantity + 1)
+                              }
+                              size="size-10"
+                              iconSize="text-[.9rem]"
+                              bgNormal="bg-s"
+                              bgHover="bg-p"
+                              textNormal="text-p"
+                              textHover="text-s"
+                              className="border border-black/1"
+                            />
+                          </div>
+
+                          <ButtonIcon
+                            icon={FaTrash}
+                            onClick={() => removeFromCart(item.id)}
+                            size="size-10"
+                            iconSize="text-[.9rem]"
+                            bgNormal="bg-s/5"
+                            bgHover="bg-red-500"
+                            textNormal="text-s/60"
+                            textHover="text-p"
+                            className="border border-s/1"
                           />
                         </div>
-
-                        <div>
-                          <h4 className="text-[.9em] font-semibold text-s uppercase">
-                            {item.title}
-                          </h4>
-                          <span className="text-[.9em] font-semibold text-s/60 uppercase">
-                            ${item.price || "24.00"} USD
-                          </span>
-                        </div>
                       </div>
-
-                      <ButtonIcon
-                        icon={FaTrash}
-                        onClick={() => removeFromCart(item.id)}
-                        size="size-12"
-                        iconSize="text-[.9rem]"
-                        bgNormal="bg-s/5"
-                        bgHover="bg-red-500"
-                        textNormal="text-s/60"
-                        textHover="text-p"
-                        className="border border-s/1"
-                      />
-                    </div>
-                  ))
+                    );
+                  })
                 )}
+              </div>
+
+              {/* Promocode */}
+              <div className="mt-5 flex items-center justify-between border-t border-b border-s/10 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    Promocode:
+                  </span>
+                  <span className="text-s/60 text-[.9rem] font-semibold uppercase">
+                    {appliedPromo ? promoCode : "NONE"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAppliedPromo(!appliedPromo)}
+                  className="text-s text-[.9rem] font-semibold uppercase"
+                >
+                  {appliedPromo ? "Cancel" : "Add"}
+                </button>
+              </div>
+
+              {/* Detail Breakdown */}
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-s/60 text-[.9rem] font-semibold uppercase">
+                    Items:
+                  </span>
+                  <span className="text-s text-[.9rem] font-semibold uppercase relative inline-block overflow-hidden h-[20px]">
+                    <AnimatePresence mode="popLayout">
+                      <motion.span
+                        key={subtotal}
+                        variants={wordReveal}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="flex flex-col"
+                      >
+                        <span className="h-[20px]">${subtotal.toFixed(0)}</span>
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </div>
+
+                {appliedPromo && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-s/60 text-[.9rem] font-semibold uppercase">
+                      Promocode:
+                    </span>
+                    <span className="text-[.9rem] font-semibold uppercase text-red-500">
+                      -${promoDiscount}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center">
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    Bonuses:
+                  </span>
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    {bonuses}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    Discount:
+                  </span>
+                  <span className="text-[.9rem] font-semibold uppercase text-red-500">
+                    -${generalDiscount}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    Delivery:
+                  </span>
+                  <span className="text-s text-[.9rem] font-semibold uppercase">
+                    {delivery}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="border-t border-s/10 pt-4 space-y-4">
+            {/* Footer */}
+            <div className="border-t border-s/15 pt-4 space-y-4 mt-4">
               <div className="flex justify-between items-baseline px-1">
-                <span className="text-[.9em] font-semibold text-s/60 uppercase">
-                  SUBTOTAL
+                <span className="text-s text-[.9rem] font-semibold uppercase">
+                  Total:
                 </span>
-                <span className="text-[.9em] font-semibold text-s uppercase">
-                  ${total.toFixed(2)} USD
+                <span className="text-s text-[1.25rem] font-semibold uppercase relative inline-block overflow-hidden h-[26px]">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={total}
+                      variants={wordReveal}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="flex flex-col"
+                    >
+                      <span className="h-[26px]">${total.toFixed(0)}</span>
+                    </motion.span>
+                  </AnimatePresence>
                 </span>
               </div>
+
+              <label className="flex items-center gap-2.5 cursor-pointer pb-1">
+                <input
+                  type="checkbox"
+                  checked={newsletter}
+                  onChange={(e) => setNewsletter(e.target.checked)}
+                  className="relative -top-0.5 accent-s size-3 rounded-none"
+                />
+                <span className="text-s/60 text-[.9rem] font-semibold uppercase">
+                  I want to sign up for the newsletter
+                </span>
+              </label>
 
               <div className="w-full">
                 <Button

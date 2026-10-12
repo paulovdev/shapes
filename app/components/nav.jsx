@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { IoMdContact } from "react-icons/io";
 import { MdFavorite, MdShoppingBag } from "react-icons/md";
 import Link from "next/link";
@@ -26,12 +26,36 @@ const navContainerAnim = {
   },
 };
 
+const wordReveal1 = {
+  initial: {
+    y: "100%",
+    opacity: 0,
+  },
+  animate: {
+    y: "0%",
+    opacity: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+  exit: {
+    y: "-100%",
+    opacity: 0,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+};
+
 const HoverText = ({
   text = "",
   icon,
   animate = false,
   hover = false,
   className = "",
+  count = null,
 }) => {
   const words = text.split(" ");
 
@@ -52,7 +76,6 @@ const HoverText = ({
               className="flex flex-col"
             >
               <span className="flex items-center h-[20px]">{icon}</span>
-
               <span className="flex items-center h-[20px]">{icon}</span>
             </motion.span>
           </motion.span>
@@ -84,6 +107,27 @@ const HoverText = ({
             </motion.span>
           </span>
         ))}
+
+        {count !== null && (
+          <span className="flex items-center ml-[0.25em]">
+            (
+            <span className="relative inline-block overflow-hidden h-[20px] w-4 text-center align-middle">
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={count}
+                  variants={wordReveal1}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="flex flex-col absolute inset-0 items-center justify-center"
+                >
+                  <span className="h-[20px]">{count}</span>
+                </motion.span>
+              </AnimatePresence>
+            </span>
+            )
+          </span>
+        )}
       </div>
     </div>
   );
@@ -92,6 +136,11 @@ const HoverText = ({
 const Nav = () => {
   const { openCart, cart = [], openFavorites, favoriteIds } = useCartStore();
   const [hovered, setHovered] = useState(null);
+
+  const totalCartCount = cart.reduce(
+    (acc, item) => acc + (item.quantity || 1),
+    0,
+  );
 
   return (
     <motion.nav
@@ -118,14 +167,15 @@ const Nav = () => {
 
       <div className="flex items-center gap-6">
         <div
-          className="overflow-hidden"
+          className="overflow-hidden cursor-pointer"
           data-cursor="hover"
           onPointerEnter={() => setHovered("fav")}
           onPointerLeave={() => setHovered(null)}
           onClick={openFavorites}
         >
           <HoverText
-            text={`WISHLIST (${favoriteIds.length - 1})`}
+            text="WISHLIST"
+            count={favoriteIds.length}
             icon={<MdFavorite className="text-[1.1em]" />}
             animate={true}
             hover={hovered === "fav"}
@@ -133,14 +183,15 @@ const Nav = () => {
           />
         </div>
         <div
-          className="overflow-hidden"
+          className="overflow-hidden cursor-pointer"
           data-cursor="hover"
           onPointerEnter={() => setHovered("bag")}
           onPointerLeave={() => setHovered(null)}
           onClick={openCart}
         >
           <HoverText
-            text={`BAG (${cart.length})`}
+            text="BAG"
+            count={totalCartCount}
             icon={<MdShoppingBag className="text-[1.1em]" />}
             animate={true}
             hover={hovered === "bag"}

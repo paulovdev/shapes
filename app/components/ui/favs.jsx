@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdClose, MdFavorite, MdShoppingBag } from "react-icons/md";
+import { MdFavorite, MdShoppingBag } from "react-icons/md";
 import { FaTrash } from "react-icons/fa6";
 import Image from "next/image";
 
@@ -10,15 +10,31 @@ import { useCartStore, useClose } from "@/app/stores/zustand";
 import { products } from "@/app/data/projects.data";
 import Button from "./button";
 
-import {
-  closeBtnAnim,
-  drawerRightAnim,
-  itemAnim,
-  overlayAnim,
-} from "@/app/anim/modal.anim";
+import { drawerRightAnim, itemAnim, overlayAnim } from "@/app/anim/modal.anim";
 import ButtonIcon from "./button-icon";
 import { RiCloseLargeFill } from "react-icons/ri";
-
+const wordReveal = {
+  initial: {
+    y: "100%",
+    opacity: 0,
+  },
+  animate: {
+    y: "0%",
+    opacity: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+  exit: {
+    y: "-100%",
+    opacity: 0,
+    transition: {
+      duration: 0.35,
+      ease: [0.33, 1, 0.68, 1],
+    },
+  },
+};
 export function FavoritesDrawer({ onAddToCart }) {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
@@ -33,6 +49,7 @@ export function FavoritesDrawer({ onAddToCart }) {
   } = useCartStore();
 
   const setCloses = useClose((state) => state.setCloses);
+  const [notifyEmail, setNotifyEmail] = useState(false);
 
   const favoriteProducts = products.filter((product) =>
     favoriteIds.includes(product.id),
@@ -107,19 +124,37 @@ export function FavoritesDrawer({ onAddToCart }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative z-10 w-full max-w-[480px] h-screen bg-p text-s border-l border-s/10 p-5
-            flex flex-col justify-between shadow-2xl"
+            className="relative z-10 w-full max-w-150 h-screen bg-p text-s border-l border-s/10 p-5 
+            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar"
           >
             <div>
               <div className="relative flex items-center justify-between w-full border-b border-s/10 pb-4">
                 <motion.div
                   custom={1}
                   variants={itemAnim}
-                  className="flex items-center gap-2.5 bg-s text-p p-2"
+                  className="flex items-center gap-2.5 bg-s p-2"
                 >
                   <MdFavorite className="text-[1em] text-red-500" />
-                  <span className="text-[0.8rem] font-bold tracking-widest">
-                    WISHLIST ({favoriteProducts.length})
+
+                  <span className="text-p text-[0.8rem] font-semibold tracking-widest flex items-center gap-1">
+                    WISHLIST (
+                    <span className="relative inline-block overflow-hidden h-[18px] w-4 text-center align-middle">
+                      <AnimatePresence mode="popLayout">
+                        <motion.span
+                          key={favoriteIds}
+                          variants={wordReveal}
+                          initial="initial"
+                          animate="animate"
+                          exit="exit"
+                          className="flex flex-col absolute inset-0 items-center justify-center"
+                        >
+                          <span className="h-[18px]">
+                            {favoriteProducts.length}
+                          </span>
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
+                    )
                   </span>
                 </motion.div>
 
@@ -136,15 +171,16 @@ export function FavoritesDrawer({ onAddToCart }) {
                 />
               </div>
 
-              <div className="mt-6 space-y-3 max-h-[calc(100vh-260px)] overflow-y-auto custom-scrollbar">
+              {/* Lista de Favoritos */}
+              <div className="mt-5 space-y-3 max-h-125 overflow-y-auto overflow-auto custom-scrollbar">
                 {favoriteProducts.length === 0 ? (
-                  <div className="py-20 text-center">
+                  <div className="py-10 text-center">
                     <p className="text-[.9em] font-semibold text-s/60 uppercase">
                       No items in your wishlist archive
                     </p>
                   </div>
                 ) : (
-                  favoriteProducts.map((item) => (
+                  favoriteProducts.map((item, idx) => (
                     <div
                       key={item.id || idx}
                       className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
@@ -173,7 +209,10 @@ export function FavoritesDrawer({ onAddToCart }) {
                       <div className="flex items-center gap-1.5">
                         <ButtonIcon
                           icon={MdShoppingBag}
-                          onClick={() => addToCart?.(item)}
+                          onClick={() => {
+                            addToCart?.(item);
+                            onAddToCart?.(item);
+                          }}
                           size="size-12"
                           iconSize="text-[.9rem]"
                           bgNormal="bg-s"
@@ -198,9 +237,34 @@ export function FavoritesDrawer({ onAddToCart }) {
                   ))
                 )}
               </div>
+
+              <div className="mt-6 border-t border-s/10 pt-4 space-y-2">
+                <span className="text-s text-[.9rem] font-semibold uppercase block">
+                  Archive Status
+                </span>
+                <p className="text-s/60 text-[.9rem] uppercase leading-relaxed">
+                  Items saved in your wishlist remain reserved for a limited
+                  time. Stock availability is not guaranteed.
+                </p>
+              </div>
             </div>
 
-            <div className="border-t border-black/10 pt-4 w-full">
+            <div className="border-t border-s/15 pt-4 space-y-4 mt-4 w-full">
+              <label
+                className="flex items-center gap-2.5 pb-1"
+                data-cursor="hover"
+              >
+                <input
+                  type="checkbox"
+                  checked={notifyEmail}
+                  onChange={(e) => setNotifyEmail(e.target.checked)}
+                  className="relative -top-0.5 accent-s size-3 rounded-none"
+                />
+                <span className="text-s/60 text-[.9rem] font-semibold uppercase">
+                  Notify me about price drops on saved items
+                </span>
+              </label>
+
               <Button
                 onClick={() => {
                   closeFavorites();
