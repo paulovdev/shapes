@@ -3,9 +3,11 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdClose, MdShoppingBag } from "react-icons/md";
+import { FaTrash } from "react-icons/fa6";
+import Image from "next/image";
 
 import { useCartStore, useClose } from "@/app/stores/zustand";
-import DitherImage from "../dither/dither-image/dither-image";
+import Button from "./button";
 
 import {
   closeBtnAnim,
@@ -13,14 +15,19 @@ import {
   itemAnim,
   overlayAnim,
 } from "@/app/anim/modal.anim";
-import { FaTrash } from "react-icons/fa6";
-import Button from "./button";
-import Image from "next/image";
+import ButtonIcon from "./button-icon";
+import { RiCloseLargeFill } from "react-icons/ri";
 
 export function CartDrawer() {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
   const cursorTimerRef = useRef(null);
+
+  const { cart, isCartOpen, closeCart, removeFromCart, checkout, getTotal } =
+    useCartStore();
+
+  const setCloses = useClose((state) => state.setCloses);
+  const total = getTotal ? getTotal() : 0;
 
   const handleOverlayEnter = () => {
     if (closingRef.current) return;
@@ -43,12 +50,6 @@ export function CartDrawer() {
     clearTimeout(cursorTimerRef.current);
     setCloses(false);
   };
-
-  const { cart, isCartOpen, closeCart, removeFromCart, checkout, getTotal } =
-    useCartStore();
-
-  const setCloses = useClose((state) => state.setCloses);
-  const total = getTotal ? getTotal() : 0;
 
   const handleClose = () => {
     closingRef.current = true;
@@ -78,7 +79,7 @@ export function CartDrawer() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="absolute inset-0 z-0 bg-s/25 backdrop-blur-md"
+            className="absolute inset-0 z-0 bg-black/40 backdrop-blur-xs"
           />
 
           <button
@@ -87,7 +88,7 @@ export function CartDrawer() {
             onClick={handleClose}
             onMouseEnter={handleOverlayEnter}
             onMouseLeave={handleOverlayLeave}
-            className="absolute inset-0 z-[1]"
+            className="absolute inset-0 z-1 cursor-default"
           />
 
           <motion.div
@@ -95,46 +96,50 @@ export function CartDrawer() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative z-10 w-full max-w-md h-screen bg-p border-l border-s/15 p-6 flex flex-col justify-between"
+            className="relative z-10 w-full max-w-[480px] h-screen bg-p text-s border-l border-s/10 p-5 
+            flex flex-col justify-between shadow-2xl"
           >
             <div>
-              <div className="relative flex items-center justify-between w-full border-b border-s/15 pb-4">
+              <div className="relative flex items-center justify-between w-full border-b border-s/10 pb-4">
                 <motion.div
                   custom={1}
                   variants={itemAnim}
-                  className="flex items-center gap-3 bg-s px-4 py-2 "
+                  className="flex items-center gap-2.5 bg-s text-p p-2"
                 >
-                  <MdShoppingBag className="relative -top-0.5 text-[1em] text-p" />
-                  <span className="text-[.9em] font-semibold text-p">
+                  <MdShoppingBag className="text-[1em]" />
+                  <span className="text-[0.8rem] font-bold tracking-widest">
                     CART BAG ({cart.length})
                   </span>
                 </motion.div>
 
-                <motion.button
-                  variants={closeBtnAnim}
+                <ButtonIcon
+                  icon={RiCloseLargeFill}
                   onClick={handleClose}
-                  className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
-                  data-cursor="hover"
-                >
-                  <MdClose className="text-[1.5em] text-p" />
-                </motion.button>
+                  size="size-12"
+                  iconSize="text-[1rem]"
+                  bgNormal="bg-s/5"
+                  bgHover="bg-s"
+                  textNormal="text-s"
+                  textHover="text-p"
+                  className="border border-black/1"
+                />
               </div>
 
-              <div className="mt-6 space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="mt-6 space-y-3 max-h-[calc(100vh-260px)] overflow-y-auto custom-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="py-16 text-center">
-                    <p className="text-[.9em] font-semibold text-s">
-                      NO ITEMS IN YOUR ARCHIVE BAG
+                  <div className="py-20 text-center">
+                    <p className="text-[.9em] font-semibold text-s/60 uppercase">
+                      No items in your archive bag
                     </p>
                   </div>
                 ) : (
                   cart.map((item, idx) => (
                     <div
                       key={item.id || idx}
-                      className="flex items-center justify-between p-3 border border-s/15 bg-s/5"
+                      className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 border border-s/15 flex items-center justify-center p-1 bg-p">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-14 h-14 border border-p/10 flex items-center justify-center p-1 bg-s/5">
                           <Image
                             src={item.img}
                             alt={item.title}
@@ -143,40 +148,56 @@ export function CartDrawer() {
                             className="object-contain size-full"
                           />
                         </div>
+
                         <div>
-                          <h4 className="text-[.9em] font-semibold text-s">
+                          <h4 className="text-[.9em] font-semibold text-s uppercase">
                             {item.title}
                           </h4>
-                          <span className="text-[.9em] font-semibold text-s">
+                          <span className="text-[.9em] font-semibold text-s/60 uppercase">
                             ${item.price || "24.00"} USD
                           </span>
                         </div>
                       </div>
-                      <button
+
+                      <ButtonIcon
+                        icon={FaTrash}
                         onClick={() => removeFromCart(item.id)}
-                        className="p-2 text-red-400 hover:text-red-500 text-[1em] cursor-pointer"
-                      >
-                        <FaTrash />
-                      </button>
+                        size="size-12"
+                        iconSize="text-[.9rem]"
+                        bgNormal="bg-s/5"
+                        bgHover="bg-red-500"
+                        textNormal="text-s/60"
+                        textHover="text-p"
+                        className="border border-s/1"
+                      />
                     </div>
                   ))
                 )}
               </div>
             </div>
 
-            <div className="border-t border-s/15 pt-4 space-y-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-[.9em] uppercase">SUBTOTAL</span>
-                <span className="text-[.9em] font-black">
+            <div className="border-t border-s/10 pt-4 space-y-4">
+              <div className="flex justify-between items-baseline px-1">
+                <span className="text-[.9em] font-semibold text-s/60 uppercase">
+                  SUBTOTAL
+                </span>
+                <span className="text-[.9em] font-semibold text-s uppercase">
                   ${total.toFixed(2)} USD
                 </span>
               </div>
-              <Button
-                onClick={checkout}
-                disabled={cart.length === 0}
-                className="w-full font-semibold uppercase text-[.9em] tracking-wider"
-                text="PROCEED TO CHECKOUT"
-              />
+
+              <div className="w-full">
+                <Button
+                  onClick={checkout}
+                  disabled={cart.length === 0}
+                  text="PAY"
+                  bgNormal="bg-s"
+                  bgHover="bg-p"
+                  textNormal="text-p"
+                  textHover="text-s"
+                  className="w-full"
+                />
+              </div>
             </div>
           </motion.div>
         </div>

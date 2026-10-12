@@ -4,18 +4,16 @@ import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Lenis from "lenis";
-import { MdClose } from "react-icons/md";
+import { MdFavorite } from "react-icons/md";
 
-import {
-  closeBtnAnim,
-  drawerLeftAnim,
-  itemAnim,
-  overlayAnim,
-} from "@/app/anim/modal.anim";
+import { drawerLeftAnim, itemAnim, overlayAnim } from "@/app/anim/modal.anim";
 
 import { Reveal } from "../../ui/reveal";
 import Button from "../../ui/button";
 import { useCartStore, useClose } from "@/app/stores/zustand";
+import ButtonIcon from "../../ui/button-icon";
+import { RiCloseLargeFill } from "react-icons/ri";
+import { TfiAngleLeft, TfiAngleRight } from "react-icons/tfi";
 
 const MINIMAP_IMAGES = [
   "/images/product-overview/product_minimap_01.jpg",
@@ -181,7 +179,7 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
         onClick={handleClose}
         onMouseEnter={handleOverlayEnter}
         onMouseLeave={handleOverlayLeave}
-        className="absolute inset-0 z-[1]"
+        className="absolute inset-0 z-1"
       />
 
       <motion.div
@@ -208,14 +206,17 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
                 </span>
               </motion.div>
 
-              <motion.button
-                variants={closeBtnAnim}
+              <ButtonIcon
+                icon={RiCloseLargeFill}
                 onClick={handleClose}
-                className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
-                data-cursor="hover"
-              >
-                <MdClose className="text-[1.5em] text-p" />
-              </motion.button>
+                size="size-12"
+                iconSize="text-[1rem]"
+                bgNormal="bg-s/5"
+                bgHover="bg-s"
+                textNormal="text-s"
+                textHover="text-p"
+                className="border border-black/1"
+              />
             </div>
 
             <div className="mt-8">
@@ -231,7 +232,6 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
               />
             </div>
 
-            {/* CONTAINER PRINCIPAL DA IMAGEM COM CLIP-PATH DIREIONAL */}
             <motion.div
               custom={3}
               variants={itemAnim}
@@ -259,11 +259,31 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
               </AnimatePresence>
 
               <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20">
-                <Button onClick={handlePrevImage} text="🡨" />
+                <ButtonIcon
+                  icon={TfiAngleLeft}
+                  onClick={handlePrevImage}
+                  size="size-12"
+                  iconSize="text-[.9em]"
+                  bgNormal="bg-s"
+                  bgHover="bg-p"
+                  textNormal="text-p"
+                  textHover="text-s"
+                  className="border border-s/1"
+                />
               </div>
 
               <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20">
-                <Button onClick={handleNextImage} text="🡪" />
+                <ButtonIcon
+                  icon={TfiAngleRight}
+                  onClick={handleNextImage}
+                  size="size-12"
+                  iconSize="text-[.9em]"
+                  bgNormal="bg-s"
+                  bgHover="bg-p"
+                  textNormal="text-p"
+                  textHover="text-s"
+                  className="border border-s/1"
+                />
               </div>
 
               <span className="absolute bottom-3 right-3 bg-s text-p text-[.9em] font-semibold uppercase px-2.5 py-1 z-20">
@@ -293,7 +313,6 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
                       className="object-cover"
                     />
 
-                    {/* Overlay de Seleção com ClipPath Direcional baseado no clique */}
                     <motion.div
                       initial={false}
                       animate={{
@@ -365,7 +384,7 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
                       href={product.downloadUrl || "#"}
                       download
                       text="DOWNLOAD RECEIPT & PROOF"
-                      className="w-full font-bold uppercase text-sm tracking-wider"
+                      className="w-full text-[.9em] font-semibold uppercase"
                     />
                   ) : (
                     <Button
@@ -382,14 +401,20 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
                           ? "REMOVE FROM BAG"
                           : `ADD (${selectedSize}) — $${product.price || "38"}`
                       }
-                      className="w-full font-semibold uppercase text-[.9em] tracking-wider"
+                      className="w-full text-[.9em] font-semibold uppercase"
                     />
                   )}
-                  <Button
-                    text="❤"
-                    active={favorite}
-                    disabled={favorite}
+
+                  <ButtonIcon
+                    icon={MdFavorite}
                     onClick={() => addToFavorite(product)}
+                    size="size-12"
+                    iconSize="text-[.9rem]"
+                    bgNormal="bg-s"
+                    bgHover="bg-p"
+                    textNormal="text-p"
+                    textHover="text-s"
+                    className="border border-s/1"
                   />
                 </div>
 

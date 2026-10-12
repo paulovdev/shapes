@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdMoreVert, MdSort, MdCheck } from "react-icons/md";
 import { wordRevealHover } from "@/app/anim/modal.anim";
@@ -70,7 +70,56 @@ export function FilterDropdown({
   const [hover, setHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredOption, setHoveredOption] = useState(null);
-  const { setCloses } = useClose();
+  const setCloses = useClose((state) => state.setCloses);
+
+  const closingRef = useRef(false);
+  const openingRef = useRef(true);
+  const cursorTimerRef = useRef(null);
+
+  const handleOverlayEnter = () => {
+    if (closingRef.current) return;
+
+    if (openingRef.current) {
+      clearTimeout(cursorTimerRef.current);
+
+      cursorTimerRef.current = setTimeout(() => {
+        if (!closingRef.current) {
+          setCloses(true);
+          openingRef.current = false;
+        }
+      }, 150);
+
+      return;
+    }
+
+    setCloses(true);
+  };
+
+  const handleOverlayLeave = () => {
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+  };
+
+  const handleCloseDropdown = () => {
+    closingRef.current = true;
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+    setIsOpen(false);
+    setHoveredOption(null);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      closingRef.current = false;
+      openingRef.current = true;
+    } else {
+      clearTimeout(cursorTimerRef.current);
+      setCloses(false);
+    }
+
+    return () => clearTimeout(cursorTimerRef.current);
+  }, [isOpen, setCloses]);
+
   const sortOptions = [
     { label: "DEFAULT", value: "DEFAULT" },
     { label: "PRICE: LOW TO HIGH", value: "PRICE_ASC" },
@@ -141,6 +190,7 @@ export function FilterDropdown({
                           onSortChange(opt.value);
                           setIsOpen(false);
                           setHoveredOption(null);
+                          handleCloseDropdown();
                         }}
                         onPointerEnter={() => setHoveredOption(opt.value)}
                         onPointerLeave={() => setHoveredOption(null)}
@@ -189,12 +239,9 @@ export function FilterDropdown({
                 )}
               </motion.div>
               <motion.div
-                onClick={() => {
-                  setIsOpen(false);
-                  setCloses(false);
-                }}
-                onMouseEnter={() => setCloses(true)}
-                onMouseLeave={() => setCloses(false)}
+                onClick={handleCloseDropdown}
+                onMouseEnter={handleOverlayEnter}
+                onMouseLeave={handleOverlayLeave}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

@@ -7,6 +7,7 @@ import { isMobile } from "react-device-detect";
 
 import { useDragging, useClose } from "@/app/stores/zustand";
 import { IoClose } from "react-icons/io5";
+import { RiCloseLargeFill } from "react-icons/ri";
 
 export default function CustomCursor() {
   const x = useMotionValue(-100);
@@ -102,7 +103,7 @@ export default function CustomCursor() {
         )}
 
         {cursorMode === "close" && (
-          <IoClose size={24} className="pointer-events-none text-s" />
+          <RiCloseLargeFill size={18} className="pointer-events-none text-s" />
         )}
       </motion.div>
     </motion.div>

@@ -111,7 +111,7 @@ const Nav = () => {
             text="shapes®"
             animate={true}
             hover={hovered === "logo"}
-            className="text-p text-[.9em] font-medium uppercase"
+            className="text-p text-[.9em] font-light uppercase"
           />
         </Link>
       </div>
@@ -125,11 +125,11 @@ const Nav = () => {
           onClick={openFavorites}
         >
           <HoverText
-            text={`FAVORITES (${favoriteIds.length - 1})`}
+            text={`WISHLIST (${favoriteIds.length - 1})`}
             icon={<MdFavorite className="text-[1.1em]" />}
             animate={true}
             hover={hovered === "fav"}
-            className="text-p text-[.9em] font-medium uppercase"
+            className="text-p text-[.9em] font-light uppercase"
           />
         </div>
         <div
@@ -144,7 +144,7 @@ const Nav = () => {
             icon={<MdShoppingBag className="text-[1.1em]" />}
             animate={true}
             hover={hovered === "bag"}
-            className="text-p text-[.9em] font-medium uppercase"
+            className="text-p text-[.9em] font-light uppercase"
           />
         </div>
       </div>

@@ -16,20 +16,28 @@ import {
   itemAnim,
   overlayAnim,
 } from "@/app/anim/modal.anim";
+import ButtonIcon from "./button-icon";
+import { RiCloseLargeFill } from "react-icons/ri";
 
 export function FavoritesDrawer({ onAddToCart }) {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
   const cursorTimerRef = useRef(null);
 
-  const { favoriteIds, removeFromFavorites, isFavoritesOpen, closeFavorites } =
-    useCartStore();
+  const {
+    favoriteIds,
+    removeFromFavorites,
+    addToCart,
+    isFavoritesOpen,
+    closeFavorites,
+  } = useCartStore();
 
   const setCloses = useClose((state) => state.setCloses);
 
   const favoriteProducts = products.filter((product) =>
     favoriteIds.includes(product.id),
   );
+
   const handleOverlayEnter = () => {
     if (closingRef.current) return;
 
@@ -82,7 +90,7 @@ export function FavoritesDrawer({ onAddToCart }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="absolute inset-0 z-0 bg-s/25 backdrop-blur-md"
+            className="absolute inset-0 z-0 bg-black/40 backdrop-blur-xs"
           />
 
           <button
@@ -91,7 +99,7 @@ export function FavoritesDrawer({ onAddToCart }) {
             onClick={handleClose}
             onMouseEnter={handleOverlayEnter}
             onMouseLeave={handleOverlayLeave}
-            className="absolute inset-0 z-[1]"
+            className="absolute inset-0 z-1 cursor-default"
           />
 
           <motion.div
@@ -99,46 +107,50 @@ export function FavoritesDrawer({ onAddToCart }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative z-10 w-full max-w-md h-screen bg-p border-l border-s/15 p-6 flex flex-col justify-between"
+            className="relative z-10 w-full max-w-[480px] h-screen bg-p text-s border-l border-s/10 p-5
+            flex flex-col justify-between shadow-2xl"
           >
             <div>
-              <div className="relative flex items-center justify-between w-full border-b border-s/15 pb-4">
+              <div className="relative flex items-center justify-between w-full border-b border-s/10 pb-4">
                 <motion.div
                   custom={1}
                   variants={itemAnim}
-                  className="flex items-center gap-3 bg-s px-4 py-2"
+                  className="flex items-center gap-2.5 bg-s text-p p-2"
                 >
-                  <MdFavorite className="relative -top-0.5 text-[1em] text-p text-red-500" />
-                  <span className="text-[.9em] font-semibold text-p">
-                    FAVORITES ({favoriteProducts.length})
+                  <MdFavorite className="text-[1em] text-red-500" />
+                  <span className="text-[0.8rem] font-bold tracking-widest">
+                    WISHLIST ({favoriteProducts.length})
                   </span>
                 </motion.div>
 
-                <motion.button
-                  variants={closeBtnAnim}
+                <ButtonIcon
+                  icon={RiCloseLargeFill}
                   onClick={handleClose}
-                  className="size-12.5 bg-s flex items-center justify-center pointer-events-auto hover:opacity-80 transition-opacity"
-                  data-cursor="hover"
-                >
-                  <MdClose className="text-[1.5em] text-p" />
-                </motion.button>
+                  size="size-12"
+                  iconSize="text-[1rem]"
+                  bgNormal="bg-s/5"
+                  bgHover="bg-s"
+                  textNormal="text-s"
+                  textHover="text-p"
+                  className="border border-black/1"
+                />
               </div>
 
-              <div className="mt-6 space-y-3 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="mt-6 space-y-3 max-h-[calc(100vh-260px)] overflow-y-auto custom-scrollbar">
                 {favoriteProducts.length === 0 ? (
-                  <div className="py-16 text-center">
-                    <p className="text-[.9em] font-semibold text-s">
-                      NO ITEMS IN YOUR FAVORITES ARCHIVE
+                  <div className="py-20 text-center">
+                    <p className="text-[.9em] font-semibold text-s/60 uppercase">
+                      No items in your wishlist archive
                     </p>
                   </div>
                 ) : (
                   favoriteProducts.map((item) => (
                     <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 border border-s/15 bg-s/5"
+                      key={item.id || idx}
+                      className="flex items-center justify-between p-2 border border-s/5 bg-p/50 hover:bg-p transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 border border-s/15 flex items-center justify-center p-1 bg-p">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-14 h-14 border border-p/10 flex items-center justify-center p-1 bg-s/5">
                           <Image
                             src={item.img}
                             alt={item.title}
@@ -149,31 +161,38 @@ export function FavoritesDrawer({ onAddToCart }) {
                         </div>
 
                         <div>
-                          <h4 className="text-[.9em] font-semibold text-s">
+                          <h4 className="text-[.9em] font-semibold text-s uppercase">
                             {item.title}
                           </h4>
-                          <span className="text-[.9em] font-semibold text-s">
+                          <span className="text-[.9em] font-semibold text-s/60 uppercase">
                             ${item.price || "24.00"} USD
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => onAddToCart?.(item)}
-                          className="p-2 text-s hover:opacity-75 transition-opacity text-[1.1em] cursor-pointer"
-                          title="Add to Bag"
-                        >
-                          <MdShoppingBag />
-                        </button>
-
-                        <button
+                      <div className="flex items-center gap-1.5">
+                        <ButtonIcon
+                          icon={MdShoppingBag}
+                          onClick={() => addToCart?.(item)}
+                          size="size-12"
+                          iconSize="text-[.9rem]"
+                          bgNormal="bg-s"
+                          bgHover="bg-p"
+                          textNormal="text-p"
+                          textHover="text-s"
+                          className="border border-s/1"
+                        />
+                        <ButtonIcon
+                          icon={FaTrash}
                           onClick={() => removeFromFavorites(item.id)}
-                          className="p-2 text-red-400 hover:text-red-500 text-[1em] cursor-pointer"
-                          title="Remove Favorite"
-                        >
-                          <FaTrash />
-                        </button>
+                          size="size-12"
+                          iconSize="text-[.9rem]"
+                          bgNormal="bg-s/5"
+                          bgHover="bg-red-500"
+                          textNormal="text-s/60"
+                          textHover="text-p"
+                          className="border border-s/1"
+                        />
                       </div>
                     </div>
                   ))
@@ -181,14 +200,18 @@ export function FavoritesDrawer({ onAddToCart }) {
               </div>
             </div>
 
-            <div className="border-t border-s/15 pt-4">
+            <div className="border-t border-black/10 pt-4 w-full">
               <Button
                 onClick={() => {
                   closeFavorites();
                   setCloses(false);
                 }}
-                className="w-full font-semibold uppercase text-[.9em] tracking-wider"
-                text="CLOSE FAVORITES"
+                text="CLOSE WISHLIST"
+                bgNormal="bg-s"
+                bgHover="bg-p"
+                textNormal="text-p"
+                textHover="text-s"
+                className="w-full"
               />
             </div>
           </motion.div>

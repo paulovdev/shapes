@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { MdFavorite, MdFavoriteBorder, MdShoppingBag } from "react-icons/md";
 import { wordRevealHover } from "@/app/anim/modal.anim";
@@ -50,7 +50,54 @@ const RevealText = ({
 export function ProductContextMenu({ product, position, onClose }) {
   const [hoveredOption, setHoveredOption] = useState(null);
   const { addToCart, addToFavorite, isFavorite, isInCart } = useCartStore();
-  const { setCloses } = useClose();
+  const setCloses = useClose((state) => state.setCloses);
+
+  const closingRef = useRef(false);
+  const openingRef = useRef(true);
+  const cursorTimerRef = useRef(null);
+
+  const handleOverlayEnter = () => {
+    if (closingRef.current) return;
+
+    if (openingRef.current) {
+      clearTimeout(cursorTimerRef.current);
+
+      cursorTimerRef.current = setTimeout(() => {
+        if (!closingRef.current) {
+          setCloses(true);
+          openingRef.current = false;
+        }
+      }, 150);
+
+      return;
+    }
+
+    setCloses(true);
+  };
+
+  const handleOverlayLeave = () => {
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+  };
+
+  const handleClose = () => {
+    closingRef.current = true;
+    clearTimeout(cursorTimerRef.current);
+    setCloses(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (product && position) {
+      closingRef.current = false;
+      openingRef.current = true;
+    } else {
+      clearTimeout(cursorTimerRef.current);
+      setCloses(false);
+    }
+
+    return () => clearTimeout(cursorTimerRef.current);
+  }, [product?.id, position?.x, position?.y, setCloses]);
   useEffect(() => {
     const handleClick = () => onClose();
     const handleKeyDown = (e) => {
@@ -77,7 +124,7 @@ export function ProductContextMenu({ product, position, onClose }) {
         exit={{ opacity: 0, scale: 0.95, y: -4 }}
         transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
         style={{ top: position.y, left: position.x }}
-        className="fixed z-9999 w-56 bg-s text-p border border-s/20 p-2 shadow-2xl select-none"
+        className="fixed z-301 w-56 bg-s text-p border border-s/20 p-2 shadow-2xl select-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="py-1">
@@ -95,7 +142,7 @@ export function ProductContextMenu({ product, position, onClose }) {
             data-cursor="hover"
           >
             <RevealText
-              text={favorite ? "FAVORITED" : "FAVORITE"}
+              text={favorite ? "REMOVE WISHLIST" : "ADD TO WISHLIST"}
               animate={true}
               hover={hoveredOption === "favorite"}
             />
@@ -147,13 +194,14 @@ export function ProductContextMenu({ product, position, onClose }) {
         </div>
       </motion.div>
       <motion.div
-        onClick={() => {
-          onClose();
-          setCloses(false);
-        }}
-        onMouseEnter={() => setCloses(true)}
-        onMouseLeave={() => setCloses(false)}
-        className="absolute inset-0 bg-s/5"
+        onClick={handleClose}
+        onMouseEnter={handleOverlayEnter}
+        onMouseLeave={handleOverlayLeave}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+        className="fixed inset-0 bg-s/5 z-300"
       />
     </>
   );

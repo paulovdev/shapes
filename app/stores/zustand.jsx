@@ -21,7 +21,7 @@ export const useCartStore = create()(
       purchasedIds: [],
       favoriteIds: [],
       isCartOpen: false,
-      isFavoritesOpen: false, // <-- Novo estado para controlar a abertura do modal de favoritos
+      isFavoritesOpen: false,  
 
       addToCart: (product) => {
         set((state) => {

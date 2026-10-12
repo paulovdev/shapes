@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`  bg-s h-full antialiased noise`}>
+    <html lang="en" className={`  bg-s h-full antialiased  `}>
       <body className="min-h-full cursor-default!  ">
         <CustomCursor />
 
