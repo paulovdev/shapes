@@ -156,7 +156,7 @@ export function FilterDropdown({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-                className="absolute right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2 z-50"
+                className="absolute bottom-15 right-0 mt-2 w-56 bg-s text-p border border-s/20 p-2 z-50"
               >
                 <div className="px-3 py-2 border-b border-s/10">
                   <div className="flex items-center justify-between">

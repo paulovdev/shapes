@@ -218,7 +218,7 @@ export default function GalleryHero({ loading }) {
             <div className="flex items-center gap-2.5">
               <div
                 onPointerLeave={() => setHoveredCategory(null)}
-                className="hidden  max-md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
+                className="hidden  max-md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-p/20 select-none pointer-events-auto"
               >
                 {CATEGORIES.map((cat) => {
                   const isActive = activeCategory === cat;
@@ -277,17 +277,16 @@ export default function GalleryHero({ loading }) {
               delay: loading ? 3.5 : 0,
               ease: [0.76, 0, 0.24, 1],
             }}
-            className="max-md:hidden fixed top-0 left-0 w-full p-4 flex items-center justify-center z-100 select-none pointer-events-none"
+            className="fixed bottom-5 left-0 w-full px-2 flex items-center justify-center z-100 select-none pointer-events-none"
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 max-w-full">
               <div
                 onPointerLeave={() => setHoveredCategory(null)}
-                className="hidden md:flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-white/20 select-none pointer-events-auto"
+                className="flex items-center gap-1 bg-s text-p p-2 h-12.5 shadow-2xl border border-p/20 select-none pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
               >
                 {CATEGORIES.map((cat) => {
                   const isActive = activeCategory === cat;
                   const isHovered = hoveredCategory === cat;
-
                   const isTarget = hoveredCategory ? isHovered : isActive;
 
                   return (
@@ -295,7 +294,7 @@ export default function GalleryHero({ loading }) {
                       key={cat}
                       onClick={() => setActiveCategory(cat)}
                       onPointerEnter={() => setHoveredCategory(cat)}
-                      className={`relative px-4 py-1 font-semibold text-[.9em] uppercase transition-colors duration-200 z-10 ${
+                      className={`relative px-3 py-1 font-semibold text-[.85em] uppercase transition-colors duration-200 z-10 whitespace-nowrap shrink-0 ${
                         isTarget ? "text-s" : "text-p"
                       }`}
                       data-cursor="hover"
@@ -326,7 +325,8 @@ export default function GalleryHero({ loading }) {
                   );
                 })}
               </div>
-              <div className="pointer-events-auto">
+
+              <div className="pointer-events-auto shrink-0">
                 <FilterDropdown sortBy={sortBy} onSortChange={setSortBy} />
               </div>
             </div>

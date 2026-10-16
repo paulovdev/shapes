@@ -188,7 +188,8 @@ export const ProductModal = memo(function ProductModal({ product, onClose }) {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="relative z-10 w-full max-w-180 h-screen bg-p text-s border-r border-s/15 p-5 overflow-y-auto custom-scrollbar overscroll-contain"
+        className="relative z-10 w-full max-w-180 h-screen bg-p text-s border-r border-s/15 p-5 
+        overflow-y-auto custom-scrollbar overscroll-contain"
       >
         <div className="flex flex-col justify-between min-h-full">
           <div>

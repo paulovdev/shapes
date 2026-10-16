@@ -13,6 +13,7 @@ import Button from "./button";
 import { drawerRightAnim, itemAnim, overlayAnim } from "@/app/anim/modal.anim";
 import ButtonIcon from "./button-icon";
 import { RiCloseLargeFill } from "react-icons/ri";
+import Lenis from "lenis";
 const wordReveal = {
   initial: {
     y: "100%",
@@ -39,6 +40,7 @@ export function FavoritesDrawer({ onAddToCart }) {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
   const cursorTimerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const {
     favoriteIds,
@@ -98,6 +100,37 @@ export function FavoritesDrawer({ onAddToCart }) {
     return () => clearTimeout(cursorTimerRef.current);
   }, [isFavoritesOpen, setCloses]);
 
+  useEffect(() => {
+    const wrapper = scrollContainerRef.current;
+    if (!wrapper) return;
+
+    const lenis = new Lenis({
+      wrapper: wrapper,
+      content: wrapper.firstElementChild,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+    });
+
+    let animationFrameId;
+
+    function raf(time) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+
+    animationFrameId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
+  }, []);
+
   return (
     <AnimatePresence>
       {isFavoritesOpen && (
@@ -120,12 +153,13 @@ export function FavoritesDrawer({ onAddToCart }) {
           />
 
           <motion.div
+            ref={scrollContainerRef}
             variants={drawerRightAnim}
             initial="initial"
             animate="animate"
             exit="exit"
             className="relative z-10 w-full max-w-150 h-screen bg-p text-s border-l border-s/10 p-5 
-            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar"
+            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar overscroll-contain"
           >
             <div>
               <div className="relative flex items-center justify-between w-full border-b border-s/10 pb-4">
@@ -171,8 +205,7 @@ export function FavoritesDrawer({ onAddToCart }) {
                 />
               </div>
 
-              {/* Lista de Favoritos */}
-              <div className="mt-5 space-y-3 max-h-125 overflow-y-auto overflow-auto custom-scrollbar">
+              <div className="mt-5 space-y-3">
                 {favoriteProducts.length === 0 ? (
                   <div className="py-10 text-center">
                     <p className="text-[.9em] font-semibold text-s/60 uppercase">

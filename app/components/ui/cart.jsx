@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdShoppingBag } from "react-icons/md";
 import { FaTrash, FaPlus, FaMinus } from "react-icons/fa6";
 import Image from "next/image";
-
+import Lenis from "lenis";
 import { useCartStore, useClose } from "@/app/stores/zustand";
 import Button from "./button";
 
@@ -40,6 +40,7 @@ export function CartDrawer() {
   const closingRef = useRef(false);
   const openingRef = useRef(true);
   const cursorTimerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const {
     cart,
@@ -54,7 +55,6 @@ export function CartDrawer() {
   const setCloses = useClose((state) => state.setCloses);
   const subtotal = getTotal ? getTotal() : 0;
 
-  const [paymentMethod, setPaymentMethod] = useState("card");
   const [promoCode, setPromoCode] = useState("OFFSET20");
   const [appliedPromo, setAppliedPromo] = useState(true);
   const [newsletter, setNewsletter] = useState(false);
@@ -114,6 +114,37 @@ export function CartDrawer() {
     0,
   );
 
+  useEffect(() => {
+    const wrapper = scrollContainerRef.current;
+    if (!wrapper) return;
+
+    const lenis = new Lenis({
+      wrapper: wrapper,
+      content: wrapper.firstElementChild,
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+    });
+
+    let animationFrameId;
+
+    function raf(time) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+
+    animationFrameId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
+  }, []);
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -137,11 +168,12 @@ export function CartDrawer() {
 
           <motion.div
             variants={drawerRightAnim}
+            ref={scrollContainerRef}
             initial="initial"
             animate="animate"
             exit="exit"
             className="relative z-10 w-full max-w-150 h-screen bg-p text-s border-l border-s/10 p-5 
-            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar"
+            flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar overscroll-contain"
           >
             <div>
               {/* Header */}
@@ -186,7 +218,7 @@ export function CartDrawer() {
               </div>
 
               {/* Items List */}
-              <div className="mt-5 space-y-3 max-h-110 overflow-y-auto custom-scrollbar">
+              <div className="mt-5 space-y-3 overflow-y-auto custom-scrollbar">
                 {cart.length === 0 ? (
                   <div className="py-10 text-center">
                     <p className="text-[.9em] font-semibold text-s/60 uppercase">
